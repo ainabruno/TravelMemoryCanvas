@@ -1864,8 +1864,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           quality: "1080p",
           aspectRatio: "16:9",
           template: "dynamic_adventure",
-          status: "generating",
-          progress: 85,
+          status: "ready",
+          progress: 100,
+          url: `/api/videos/album_${firstAlbum.id}.mp4`,
+          thumbnailUrl: `/api/videos/album_${firstAlbum.id}_thumb.jpg`,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           metadata: {
