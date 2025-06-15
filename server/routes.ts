@@ -1800,6 +1800,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve video thumbnail images
+  app.get("/api/videos/:filename", async (req, res) => {
+    const { filename } = req.params;
+    
+    // Check if it's a thumbnail request
+    if (filename.endsWith('_thumb.jpg') || filename.endsWith('.jpg') || filename.endsWith('.png')) {
+      // Generate a simple placeholder image or serve actual thumbnail
+      // For now, redirect to a placeholder image service
+      const imageUrl = `https://picsum.photos/640/360?random=${filename}`;
+      return res.redirect(imageUrl);
+    }
+    
+    // If not an image, continue to video data endpoint
+    return res.status(404).json({ message: "File not found" });
+  });
+
   app.get("/api/videos", async (req, res) => {
     try {
       const { tripId, albumId } = req.query;
