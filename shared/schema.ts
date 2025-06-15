@@ -1,23 +1,24 @@
 import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  description: text("description").default(null),
+  description: text("description"),
   location: text("location").notNull(),
   startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").default(null),
-  coverPhotoUrl: text("cover_photo_url").default(null),
+  endDate: timestamp("end_date"),
+  coverPhotoUrl: text("cover_photo_url"),
 });
 
 export const albums = pgTable("albums", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  description: text("description").default(null),
-  coverPhotoUrl: text("cover_photo_url").default(null),
-  tripId: integer("trip_id").references(() => trips.id).default(null),
+  description: text("description"),
+  coverPhotoUrl: text("cover_photo_url"),
+  tripId: integer("trip_id").references(() => trips.id),
 });
 
 export const photos = pgTable("photos", {
@@ -32,6 +33,31 @@ export const photos = pgTable("photos", {
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   metadata: text("metadata"), // JSON string for EXIF data
 });
+
+// Define relations
+export const tripsRelations = relations(trips, ({ many }) => ({
+  albums: many(albums),
+  photos: many(photos),
+}));
+
+export const albumsRelations = relations(albums, ({ one, many }) => ({
+  trip: one(trips, {
+    fields: [albums.tripId],
+    references: [trips.id],
+  }),
+  photos: many(photos),
+}));
+
+export const photosRelations = relations(photos, ({ one }) => ({
+  trip: one(trips, {
+    fields: [photos.tripId],
+    references: [trips.id],
+  }),
+  album: one(albums, {
+    fields: [photos.albumId],
+    references: [albums.id],
+  }),
+}));
 
 export const insertTripSchema = createInsertSchema(trips).omit({
   id: true,

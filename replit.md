@@ -10,7 +10,7 @@ Wanderlust is a full-stack travel photo management application that allows users
 - **Frontend**: React 18 with TypeScript, Vite for build tooling
 - **UI Framework**: shadcn/ui components with Tailwind CSS for styling
 - **Backend**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: PostgreSQL with Drizzle ORM and Neon serverless connection
 - **File Upload**: Multer for handling multipart/form-data
 - **State Management**: TanStack Query (React Query) for server state
 - **Routing**: Wouter for client-side routing
