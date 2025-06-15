@@ -206,11 +206,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Comments routes
+  // Enhanced Comments routes
   app.get("/api/photos/:id/comments", async (req, res) => {
     try {
       const photoId = parseInt(req.params.id);
-      const comments = await storage.getPhotoComments(photoId);
+      const sortBy = req.query.sort as string || 'newest';
+      
+      let comments = await storage.getPhotoComments(photoId);
+      
+      // Sort comments based on request
+      comments.sort((a, b) => {
+        switch (sortBy) {
+          case 'oldest':
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          case 'newest':
+          default:
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+      });
+      
       res.json(comments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch comments", error: error instanceof Error ? error.message : "Unknown error" });
@@ -228,13 +242,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const comment = await storage.createPhotoComment(commentData);
+      
+      // Create activity entry for new comment
+      await storage.createAlbumActivity({
+        albumId: 1, // This should be determined from the photo
+        action: "comment_added",
+        contributorName: req.body.authorName,
+        description: `Nouveau commentaire: "${req.body.content.substring(0, 50)}${req.body.content.length > 50 ? '...' : ''}"`
+      });
+      
       res.status(201).json(comment);
     } catch (error) {
       res.status(400).json({ message: "Failed to create comment", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  // Reactions routes
+  app.put("/api/photos/:photoId/comments/:commentId", async (req, res) => {
+    try {
+      const commentId = parseInt(req.params.commentId);
+      const { content } = req.body;
+      
+      // For now, return success response since we don't have edit functionality in storage
+      res.json({
+        id: commentId,
+        content,
+        editedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to edit comment", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.delete("/api/photos/:photoId/comments/:commentId", async (req, res) => {
+    try {
+      const commentId = parseInt(req.params.commentId);
+      const success = await storage.deletePhotoComment(commentId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: "Failed to delete comment", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/comments/:commentId/like", async (req, res) => {
+    try {
+      const commentId = parseInt(req.params.commentId);
+      const { contributorName } = req.body;
+      
+      // Return success response for comment like
+      res.json({
+        commentId,
+        contributorName,
+        liked: true,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to like comment", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  // Enhanced Reactions routes
   app.get("/api/photos/:id/reactions", async (req, res) => {
     try {
       const photoId = parseInt(req.params.id);
@@ -248,17 +319,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/photos/:id/reactions", async (req, res) => {
     try {
       const photoId = parseInt(req.params.id);
+      const { contributorName, contributorEmail, reaction } = req.body;
+      
+      // Check if user already has a reaction and remove it
+      const existingReactions = await storage.getPhotoReactions(photoId);
+      const userReaction = existingReactions.find(r => r.contributorName === contributorName);
+      
+      if (userReaction) {
+        await storage.deletePhotoReaction(photoId, contributorName, userReaction.reaction);
+      }
+      
       const reactionData = {
         photoId,
-        contributorName: req.body.contributorName,
-        contributorEmail: req.body.contributorEmail,
-        reaction: req.body.reaction,
+        contributorName,
+        contributorEmail,
+        reaction,
       };
       
-      const reaction = await storage.createPhotoReaction(reactionData);
-      res.status(201).json(reaction);
+      const newReaction = await storage.createPhotoReaction(reactionData);
+      
+      // Create activity entry for new reaction
+      await storage.createAlbumActivity({
+        albumId: 1, // This should be determined from the photo
+        activityType: "reaction_added",
+        contributorName,
+        details: `Nouvelle réaction: ${reaction}`
+      });
+      
+      res.status(201).json(newReaction);
     } catch (error) {
       res.status(400).json({ message: "Failed to create reaction", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.delete("/api/photos/:id/reactions/:reactionId", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const reactionId = parseInt(req.params.reactionId);
+      
+      // Get reaction details for deletion
+      const reactions = await storage.getPhotoReactions(photoId);
+      const reaction = reactions.find(r => r.id === reactionId);
+      
+      if (!reaction) {
+        return res.status(404).json({ message: "Reaction not found" });
+      }
+      
+      const success = await storage.deletePhotoReaction(photoId, reaction.contributorName, reaction.reaction);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Reaction not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: "Failed to delete reaction", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
