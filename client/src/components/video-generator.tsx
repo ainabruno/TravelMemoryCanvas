@@ -810,54 +810,32 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Always show videos if they exist, regardless of loading state */}
-            {existingVideos && existingVideos.length > 0 && existingVideos.map((video: GeneratedVideo) => (
-              <div key={video.id} className="border rounded-lg p-4 hover:bg-gray-50 bg-white">
+            {/* Simplified rendering - force display */}
+            {existingVideos?.map((video: GeneratedVideo) => 
+              <div key={video.id} className="border-2 border-blue-500 rounded-lg p-4 bg-white shadow-md">
                 <div className="aspect-video bg-gray-200 rounded mb-3 flex items-center justify-center">
-                  {video.thumbnailUrl ? (
-                    <img 
-                      src={video.thumbnailUrl} 
-                      alt={video.title}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  ) : (
-                    <Video className="w-12 h-12 text-gray-400" />
-                  )}
+                  <Video className="w-12 h-12 text-gray-400" />
                 </div>
-                <h4 className="font-medium mb-1 text-black">{video.title}</h4>
+                <h4 className="font-bold mb-1 text-black text-lg">{video.title}</h4>
                 <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
                   <span>{formatTime(video.duration)}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {video.quality}
-                  </Badge>
-                  <Badge 
-                    variant={video.status === 'ready' ? 'default' : video.status === 'generating' ? 'secondary' : 'destructive'}
-                    className="text-xs"
-                  >
-                    {video.status === 'ready' ? 'Prêt' : video.status === 'generating' ? 'Génération...' : 'Erreur'}
+                  <Badge variant="outline" className="text-xs">{video.quality}</Badge>
+                  <Badge variant={video.status === 'ready' ? 'default' : 'secondary'} className="text-xs">
+                    {video.status === 'ready' ? 'Prêt' : 'Génération...'}
                   </Badge>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" disabled={video.status !== 'ready'}>
+                  <Button size="sm" className="bg-blue-500 text-white">
                     <Play className="w-3 h-3 mr-1" />
                     Lire
                   </Button>
-                  <Button size="sm" variant="outline" disabled={video.status !== 'ready'}>
+                  <Button size="sm" variant="outline">
                     <Download className="w-3 h-3" />
                   </Button>
-                  <Button size="sm" variant="outline" disabled={video.status !== 'ready'}>
+                  <Button size="sm" variant="outline">
                     <Share className="w-3 h-3" />
                   </Button>
                 </div>
-              </div>
-            ))}
-            
-            {/* Show empty state only if no videos */}
-            {(!existingVideos || existingVideos.length === 0) && (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                <Video className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">Aucune vidéo créée</p>
-                <p className="text-sm">Utilisez le générateur ci-dessus pour créer votre première vidéo</p>
               </div>
             )}
           </div>
