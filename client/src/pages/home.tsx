@@ -50,6 +50,8 @@ interface Photo {
   albumId: number | null;
   caption: string | null;
   location: string | null;
+  latitude: string | null;
+  longitude: string | null;
   uploadedAt: string;
   metadata: string | null;
 }
@@ -185,12 +187,12 @@ export default function Home() {
           <TabsContent value="overview" className="space-y-8">
             {/* Recent Trips */}
             <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-slate-900">Recent Trips</h3>
-            <button className="text-adventure-blue hover:text-blue-700 font-medium">
-              View All →
-            </button>
-          </div>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-900">Recent Trips</h3>
+                <button className="text-adventure-blue hover:text-blue-700 font-medium">
+                  View All →
+                </button>
+              </div>
 
           {tripsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

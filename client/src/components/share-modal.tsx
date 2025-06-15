@@ -17,6 +17,8 @@ interface Photo {
   albumId: number | null;
   caption: string | null;
   location: string | null;
+  latitude: string | null;
+  longitude: string | null;
   uploadedAt: string;
   metadata: string | null;
 }
