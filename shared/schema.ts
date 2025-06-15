@@ -938,6 +938,309 @@ export type ShareableItem = typeof shareableItems.$inferSelect;
 export type SharePermission = typeof sharePermissions.$inferSelect;
 export type ShareActivity = typeof shareActivity.$inferSelect;
 export type ShareTemplate = typeof shareTemplates.$inferSelect;
+
+// Monetization System
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // Free, Explorer, Professional, Enterprise
+  displayName: text("display_name").notNull(),
+  description: text("description").notNull(),
+  price: numeric("price").notNull(), // monthly price
+  yearlyPrice: numeric("yearly_price"), // yearly discount price
+  currency: text("currency").default("EUR"),
+  trialDays: integer("trial_days").default(0),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  features: text("features").array(), // list of features
+  limits: jsonb("limits"), // storage, uploads, AI requests, etc.
+  stripePriceId: text("stripe_price_id"), // Stripe price ID
+  stripeYearlyPriceId: text("stripe_yearly_price_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userSubscriptions = pgTable("user_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  planId: integer("plan_id").references(() => subscriptionPlans.id).notNull(),
+  status: text("status").notNull(), // active, canceled, expired, past_due, trialing
+  billingCycle: text("billing_cycle").default("monthly"), // monthly, yearly
+  currentPeriodStart: timestamp("current_period_start").notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  trialStart: timestamp("trial_start"),
+  trialEnd: timestamp("trial_end"),
+  canceledAt: timestamp("canceled_at"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripeCustomerId: text("stripe_customer_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userUsage = pgTable("user_usage", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  month: text("month").notNull(), // YYYY-MM format
+  storageUsed: integer("storage_used").default(0), // in MB
+  photosUploaded: integer("photos_uploaded").default(0),
+  aiRequestsUsed: integer("ai_requests_used").default(0),
+  videoGenerations: integer("video_generations").default(0),
+  storyGenerations: integer("story_generations").default(0),
+  anonymizationRequests: integer("anonymization_requests").default(0),
+  sharedAlbums: integer("shared_albums").default(0),
+  premiumFeatureUsage: jsonb("premium_feature_usage"), // detailed usage stats
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  unique().on(table.userId, table.month),
+]);
+
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  subscriptionId: integer("subscription_id").references(() => userSubscriptions.id),
+  amount: numeric("amount").notNull(),
+  currency: text("currency").default("EUR"),
+  status: text("status").notNull(), // pending, succeeded, failed, refunded
+  paymentMethod: text("payment_method"), // card, paypal, etc.
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  stripeInvoiceId: text("stripe_invoice_id"),
+  description: text("description"),
+  metadata: jsonb("metadata"),
+  paidAt: timestamp("paid_at"),
+  refundedAt: timestamp("refunded_at"),
+  refundAmount: numeric("refund_amount"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const premiumFeatures = pgTable("premium_features", {
+  id: serial("id").primaryKey(),
+  featureKey: text("feature_key").notNull().unique(), // ai_analysis, video_generation, etc.
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // ai, storage, collaboration, export
+  requiredPlan: text("required_plan").notNull(), // free, explorer, professional, enterprise
+  isActive: boolean("is_active").default(true),
+  usageLimit: integer("usage_limit"), // monthly limit for the feature
+  pricePer: numeric("price_per"), // price per usage if pay-per-use
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const featureUsage = pgTable("feature_usage", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  featureKey: text("feature_key").notNull(),
+  usageCount: integer("usage_count").default(1),
+  metadata: jsonb("metadata"), // additional usage data
+  month: text("month").notNull(), // YYYY-MM format
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  unique().on(table.userId, table.featureKey, table.month),
+]);
+
+export const marketplaceItems = pgTable("marketplace_items", {
+  id: serial("id").primaryKey(),
+  sellerId: varchar("seller_id").notNull(),
+  itemType: text("item_type").notNull(), // photo_book, video, story, itinerary, guide
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  price: numeric("price").notNull(),
+  currency: text("currency").default("EUR"),
+  category: text("category").notNull(),
+  tags: text("tags").array(),
+  previewUrl: text("preview_url"),
+  downloadUrl: text("download_url"),
+  thumbnailUrl: text("thumbnail_url"),
+  rating: numeric("rating").default("0"),
+  totalSales: integer("total_sales").default(0),
+  totalReviews: integer("total_reviews").default(0),
+  isActive: boolean("is_active").default(true),
+  isFeatured: boolean("is_featured").default(false),
+  commission: numeric("commission").default("0.15"), // platform commission (15%)
+  metadata: jsonb("metadata"), // item-specific data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const marketplacePurchases = pgTable("marketplace_purchases", {
+  id: serial("id").primaryKey(),
+  buyerId: varchar("buyer_id").notNull(),
+  sellerId: varchar("seller_id").notNull(),
+  itemId: integer("item_id").references(() => marketplaceItems.id).notNull(),
+  amount: numeric("amount").notNull(),
+  commission: numeric("commission").notNull(),
+  sellerAmount: numeric("seller_amount").notNull(),
+  status: text("status").default("completed"), // pending, completed, refunded
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  downloadCount: integer("download_count").default(0),
+  maxDownloads: integer("max_downloads").default(5),
+  purchaseNotes: text("purchase_notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const marketplaceReviews = pgTable("marketplace_reviews", {
+  id: serial("id").primaryKey(),
+  purchaseId: integer("purchase_id").references(() => marketplacePurchases.id).notNull(),
+  reviewerId: varchar("reviewer_id").notNull(),
+  itemId: integer("item_id").references(() => marketplaceItems.id).notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  title: text("title"),
+  content: text("content").notNull(),
+  isVerifiedPurchase: boolean("is_verified_purchase").default(true),
+  helpfulVotes: integer("helpful_votes").default(0),
+  sellerResponse: text("seller_response"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const affiliateProgram = pgTable("affiliate_program", {
+  id: serial("id").primaryKey(),
+  affiliateId: varchar("affiliate_id").notNull().unique(),
+  userId: varchar("user_id").notNull(),
+  status: text("status").default("active"), // active, suspended, terminated
+  commissionRate: numeric("commission_rate").default("0.20"), // 20% commission
+  totalEarnings: numeric("total_earnings").default("0"),
+  pendingEarnings: numeric("pending_earnings").default("0"),
+  paidEarnings: numeric("paid_earnings").default("0"),
+  referralCode: text("referral_code").notNull().unique(),
+  totalReferrals: integer("total_referrals").default(0),
+  activeReferrals: integer("active_referrals").default(0),
+  paymentMethod: text("payment_method"), // bank, paypal, stripe
+  paymentDetails: jsonb("payment_details"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const affiliateReferrals = pgTable("affiliate_referrals", {
+  id: serial("id").primaryKey(),
+  affiliateId: varchar("affiliate_id").references(() => affiliateProgram.affiliateId).notNull(),
+  referredUserId: varchar("referred_user_id").notNull(),
+  referralCode: text("referral_code").notNull(),
+  status: text("status").default("pending"), // pending, confirmed, converted
+  subscriptionId: integer("subscription_id").references(() => userSubscriptions.id),
+  commissionEarned: numeric("commission_earned").default("0"),
+  conversionDate: timestamp("conversion_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const affiliatePayouts = pgTable("affiliate_payouts", {
+  id: serial("id").primaryKey(),
+  affiliateId: varchar("affiliate_id").references(() => affiliateProgram.affiliateId).notNull(),
+  amount: numeric("amount").notNull(),
+  currency: text("currency").default("EUR"),
+  status: text("status").default("pending"), // pending, paid, failed
+  paymentMethod: text("payment_method").notNull(),
+  transactionId: text("transaction_id"),
+  notes: text("notes"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const promotions = pgTable("promotions", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // percentage, fixed_amount, free_trial
+  value: numeric("value").notNull(), // discount percentage or amount
+  currency: text("currency").default("EUR"),
+  minAmount: numeric("min_amount"), // minimum purchase amount
+  maxDiscount: numeric("max_discount"), // maximum discount amount
+  maxUsage: integer("max_usage"), // maximum total uses
+  currentUsage: integer("current_usage").default(0),
+  maxUsagePerUser: integer("max_usage_per_user").default(1),
+  validFrom: timestamp("valid_from").notNull(),
+  validUntil: timestamp("valid_until").notNull(),
+  isActive: boolean("is_active").default(true),
+  applicablePlans: text("applicable_plans").array(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const promotionUsage = pgTable("promotion_usage", {
+  id: serial("id").primaryKey(),
+  promotionId: integer("promotion_id").references(() => promotions.id).notNull(),
+  userId: varchar("user_id").notNull(),
+  subscriptionId: integer("subscription_id").references(() => userSubscriptions.id),
+  discountAmount: numeric("discount_amount").notNull(),
+  usedAt: timestamp("used_at").defaultNow().notNull(),
+}, (table) => [
+  unique().on(table.promotionId, table.userId),
+]);
+
+// Monetization Relations
+export const subscriptionPlansRelations = relations(subscriptionPlans, ({ many }) => ({
+  userSubscriptions: many(userSubscriptions),
+}));
+
+export const userSubscriptionsRelations = relations(userSubscriptions, ({ one, many }) => ({
+  plan: one(subscriptionPlans, {
+    fields: [userSubscriptions.planId],
+    references: [subscriptionPlans.id],
+  }),
+  payments: many(payments),
+}));
+
+export const marketplaceItemsRelations = relations(marketplaceItems, ({ many }) => ({
+  purchases: many(marketplacePurchases),
+  reviews: many(marketplaceReviews),
+}));
+
+export const marketplacePurchasesRelations = relations(marketplacePurchases, ({ one, many }) => ({
+  item: one(marketplaceItems, {
+    fields: [marketplacePurchases.itemId],
+    references: [marketplaceItems.id],
+  }),
+  reviews: many(marketplaceReviews),
+}));
+
+export const affiliateProgramRelations = relations(affiliateProgram, ({ many }) => ({
+  referrals: many(affiliateReferrals),
+  payouts: many(affiliatePayouts),
+}));
+
+// Insert and Select Types for Monetization
+export const insertSubscriptionPlanSchema = createInsertSchema(subscriptionPlans);
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions);
+export const insertUserUsageSchema = createInsertSchema(userUsage);
+export const insertPaymentSchema = createInsertSchema(payments);
+export const insertPremiumFeatureSchema = createInsertSchema(premiumFeatures);
+export const insertFeatureUsageSchema = createInsertSchema(featureUsage);
+export const insertMarketplaceItemSchema = createInsertSchema(marketplaceItems);
+export const insertMarketplacePurchaseSchema = createInsertSchema(marketplacePurchases);
+export const insertMarketplaceReviewSchema = createInsertSchema(marketplaceReviews);
+export const insertAffiliateProgramSchema = createInsertSchema(affiliateProgram);
+export const insertAffiliateReferralSchema = createInsertSchema(affiliateReferrals);
+export const insertAffiliatePayoutSchema = createInsertSchema(affiliatePayouts);
+export const insertPromotionSchema = createInsertSchema(promotions);
+export const insertPromotionUsageSchema = createInsertSchema(promotionUsage);
+
+export type InsertSubscriptionPlan = z.infer<typeof insertSubscriptionPlanSchema>;
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+export type InsertUserUsage = z.infer<typeof insertUserUsageSchema>;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type InsertPremiumFeature = z.infer<typeof insertPremiumFeatureSchema>;
+export type InsertFeatureUsage = z.infer<typeof insertFeatureUsageSchema>;
+export type InsertMarketplaceItem = z.infer<typeof insertMarketplaceItemSchema>;
+export type InsertMarketplacePurchase = z.infer<typeof insertMarketplacePurchaseSchema>;
+export type InsertMarketplaceReview = z.infer<typeof insertMarketplaceReviewSchema>;
+export type InsertAffiliateProgram = z.infer<typeof insertAffiliateProgramSchema>;
+export type InsertAffiliateReferral = z.infer<typeof insertAffiliateReferralSchema>;
+export type InsertAffiliatePayout = z.infer<typeof insertAffiliatePayoutSchema>;
+export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
+export type InsertPromotionUsage = z.infer<typeof insertPromotionUsageSchema>;
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type UserUsage = typeof userUsage.$inferSelect;
+export type Payment = typeof payments.$inferSelect;
+export type PremiumFeature = typeof premiumFeatures.$inferSelect;
+export type FeatureUsage = typeof featureUsage.$inferSelect;
+export type MarketplaceItem = typeof marketplaceItems.$inferSelect;
+export type MarketplacePurchase = typeof marketplacePurchases.$inferSelect;
+export type MarketplaceReview = typeof marketplaceReviews.$inferSelect;
+export type AffiliateProgram = typeof affiliateProgram.$inferSelect;
+export type AffiliateReferral = typeof affiliateReferrals.$inferSelect;
+export type AffiliatePayout = typeof affiliatePayouts.$inferSelect;
+export type Promotion = typeof promotions.$inferSelect;
+export type PromotionUsage = typeof promotionUsage.$inferSelect;
 export type ShareCollection = typeof shareCollections.$inferSelect;
 export type ShareNotification = typeof shareNotifications.$inferSelect;
 export type ShareAnalytics = typeof shareAnalytics.$inferSelect;
