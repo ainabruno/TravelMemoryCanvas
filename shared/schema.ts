@@ -5,19 +5,19 @@ import { z } from "zod";
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  description: text("description"),
+  description: text("description").default(null),
   location: text("location").notNull(),
   startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"),
-  coverPhotoUrl: text("cover_photo_url"),
+  endDate: timestamp("end_date").default(null),
+  coverPhotoUrl: text("cover_photo_url").default(null),
 });
 
 export const albums = pgTable("albums", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  description: text("description"),
-  coverPhotoUrl: text("cover_photo_url"),
-  tripId: integer("trip_id").references(() => trips.id),
+  description: text("description").default(null),
+  coverPhotoUrl: text("cover_photo_url").default(null),
+  tripId: integer("trip_id").references(() => trips.id).default(null),
 });
 
 export const photos = pgTable("photos", {
