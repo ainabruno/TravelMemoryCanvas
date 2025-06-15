@@ -1,4 +1,4 @@
-import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video, Map } from "lucide-react";
+import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video, Map, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/notification-center";
 
@@ -42,6 +42,10 @@ export default function AppHeader() {
               <a href="/enhanced-maps" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
                 <Map className="w-4 h-4" />
                 Cartes+
+              </a>
+              <a href="/social-import" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <Download className="w-4 h-4" />
+                Import Social
               </a>
             </nav>
           </div>
