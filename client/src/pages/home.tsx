@@ -9,6 +9,7 @@ import PhotoEditModal from "@/components/photo-edit-modal";
 import ShareModal from "@/components/share-modal";
 import SharedAlbumModal from "@/components/shared-album-modal";
 import JoinSharedAlbum from "@/components/join-shared-album";
+import ActivityFeed from "@/components/activity-feed";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

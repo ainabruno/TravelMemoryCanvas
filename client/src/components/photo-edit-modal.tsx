@@ -3,8 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Share } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Share, MessageCircle, Edit3 } from "lucide-react";
 import { applyPhotoFilters } from "@/lib/photo-editor";
+import PhotoComments from "@/components/photo-comments";
 
 interface Photo {
   id: number;
