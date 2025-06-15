@@ -253,6 +253,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile routes
+  app.get("/api/users/:userId/profile", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const profile = await storage.getUserProfile(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "User profile not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user profile", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/users/:userId/profile", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const profileData = {
+        userId,
+        username: req.body.username,
+        displayName: req.body.displayName,
+        bio: req.body.bio,
+        location: req.body.location,
+        website: req.body.website,
+        privacy: req.body.privacy || "public",
+      };
+      
+      const profile = await storage.createUserProfile(profileData);
+      res.status(201).json(profile);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create user profile", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.put("/api/users/:userId/profile", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const updateData = {
+        displayName: req.body.displayName,
+        bio: req.body.bio,
+        location: req.body.location,
+        website: req.body.website,
+        privacy: req.body.privacy,
+      };
+      
+      const profile = await storage.updateUserProfile(userId, updateData);
+      if (!profile) {
+        return res.status(404).json({ message: "User profile not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update user profile", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/users/:userId/stats", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const stats = await storage.getUserStats(userId);
+      if (!stats) {
+        return res.status(404).json({ message: "User stats not found" });
+      }
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user stats", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/users/:userId/achievements", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const achievements = await storage.getUserAchievements(userId);
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user achievements", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/users/:userId/follow", async (req, res) => {
+    try {
+      const followingId = req.params.userId;
+      const followerId = req.body.followerId; // In real app, this would come from session
+      
+      const follow = await storage.followUser(followerId, followingId);
+      res.status(201).json(follow);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to follow user", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/users/:userId/unfollow", async (req, res) => {
+    try {
+      const followingId = req.params.userId;
+      const followerId = req.body.followerId; // In real app, this would come from session
+      
+      const success = await storage.unfollowUser(followerId, followingId);
+      if (!success) {
+        return res.status(404).json({ message: "Follow relationship not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: "Failed to unfollow user", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/users/:userId/photos", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      // For now, return all photos - in real app, filter by user
+      const photos = await storage.getPhotos();
+      res.json(photos.slice(0, 20)); // Limit to 20 photos
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user photos", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
