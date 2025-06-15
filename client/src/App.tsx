@@ -13,6 +13,7 @@ import VideoGenerationPage from "@/pages/video-generation";
 import EnhancedMaps from "@/pages/enhanced-maps";
 import SocialImportPage from "@/pages/social-import";
 import TravelStatisticsPage from "@/pages/travel-statistics";
+import TravelGroupsPage from "@/pages/travel-groups";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/enhanced-maps" component={EnhancedMaps} />
       <Route path="/social-import" component={SocialImportPage} />
       <Route path="/statistics" component={TravelStatisticsPage} />
+      <Route path="/groups" component={TravelGroupsPage} />
       <Route component={NotFound} />
     </Switch>
   );
