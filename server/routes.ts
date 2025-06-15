@@ -170,6 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const albumId = parseInt(req.params.id);
       const contributorData = {
+        albumId,
         contributorName: req.body.contributorName,
         contributorEmail: req.body.contributorEmail,
         role: req.body.role || "contributor",
@@ -178,10 +179,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         canDelete: req.body.canDelete !== undefined ? req.body.canDelete : false,
       };
       
-      const contributor = await storage.addContributor(albumId, { ...contributorData, albumId });
+      const contributor = await storage.addContributor(albumId, contributorData);
       res.status(201).json(contributor);
     } catch (error) {
       res.status(400).json({ message: "Failed to add contributor", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  // Comments routes
+  app.get("/api/photos/:id/comments", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const comments = await storage.getPhotoComments(photoId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch comments", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/photos/:id/comments", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const commentData = {
+        photoId,
+        authorName: req.body.authorName,
+        authorEmail: req.body.authorEmail,
+        content: req.body.content,
+      };
+      
+      const comment = await storage.createPhotoComment(commentData);
+      res.status(201).json(comment);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create comment", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  // Reactions routes
+  app.get("/api/photos/:id/reactions", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const reactions = await storage.getPhotoReactions(photoId);
+      res.json(reactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch reactions", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/photos/:id/reactions", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const reactionData = {
+        photoId,
+        contributorName: req.body.contributorName,
+        contributorEmail: req.body.contributorEmail,
+        reaction: req.body.reaction,
+      };
+      
+      const reaction = await storage.createPhotoReaction(reactionData);
+      res.status(201).json(reaction);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create reaction", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  // Activity routes
+  app.get("/api/albums/:id/activity", async (req, res) => {
+    try {
+      const albumId = parseInt(req.params.id);
+      const activities = await storage.getAlbumActivity(albumId);
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch activity", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
