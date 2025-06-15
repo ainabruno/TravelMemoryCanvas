@@ -223,12 +223,15 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
   });
 
   // Fetch existing videos
-  const { data: existingVideos = [] } = useQuery({
+  const { data: existingVideos = [], isLoading: videosLoading, error: videosError } = useQuery({
     queryKey: ['/api/videos'],
     queryFn: () => {
       return apiRequest('GET', '/api/videos').then(res => res.json());
     }
   });
+
+  // Debug log
+  console.log('Videos data:', existingVideos, 'Loading:', videosLoading, 'Error:', videosError);
 
   // Generate video mutation
   const generateVideoMutation = useMutation({
@@ -798,9 +801,19 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {existingVideos && existingVideos.length > 0 ? (
-              existingVideos.map((video: GeneratedVideo) => (
+          {videosLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p>Chargement des vidéos...</p>
+            </div>
+          ) : videosError ? (
+            <div className="text-center py-8 text-red-500">
+              <p>Erreur lors du chargement des vidéos</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {existingVideos && existingVideos.length > 0 ? (
+                existingVideos.map((video: GeneratedVideo) => (
                 <div key={video.id} className="border rounded-lg p-4 hover:bg-gray-50">
                   <div className="aspect-video bg-gray-200 rounded mb-3 flex items-center justify-center">
                     {video.thumbnailUrl ? (
@@ -848,6 +861,7 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
               </div>
             )}
           </div>
+          )}
         </CardContent>
       </Card>
     </div>
