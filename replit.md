@@ -131,6 +131,7 @@ The application uses comprehensive entities for travel organization:
 - June 15, 2025: Completely redesigned home page with modern gradient hero section, enhanced statistics cards with growth indicators, quick action buttons for main features, improved navigation tabs, and French localization for better user experience
 - June 15, 2025: Implemented comprehensive monetization system with multiple revenue streams including subscription management (Basic/Pro/Enterprise tiers), marketplace for digital content sales, affiliate program with commission tracking, revenue analytics dashboard, and Stripe payment integration
 - June 15, 2025: Completed full French localization of the entire user interface including all monetization features, navigation, forms, error messages, and user-facing content with professional French translations and cultural adaptations
+- June 15, 2025: Redesigned navigation menu with hierarchical organization into logical categories: "Mes Voyages", "IA & Création", "Social & Partage", "Confidentialité", and "Premium & Business" for improved user experience and intuitive feature discovery
 
 ## User Preferences
 
