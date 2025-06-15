@@ -1,4 +1,4 @@
-import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace } from "lucide-react";
+import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/notification-center";
 
@@ -34,6 +34,10 @@ export default function AppHeader() {
               <a href="/photo-books" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
                 <BookOpen className="w-4 h-4" />
                 Livres
+              </a>
+              <a href="/videos" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <Video className="w-4 h-4" />
+                Vidéos
               </a>
             </nav>
           </div>
