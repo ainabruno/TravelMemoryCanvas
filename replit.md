@@ -38,10 +38,13 @@ The application follows a monorepo structure with clear separation between clien
 - **Error Handling**: Centralized error handling with appropriate HTTP status codes
 
 ### Database Schema
-The application uses three main entities:
+The application uses comprehensive entities for travel organization:
 - **Trips**: Travel trips with metadata (title, description, location, dates)
-- **Albums**: Photo collections that can be associated with trips
-- **Photos**: Individual photos with metadata, captions, and location data
+- **Albums**: Photo collections that can be associated with trips, including shared albums
+- **Photos**: Individual photos with metadata, captions, and GPS location data
+- **User Profiles**: Complete user information with social features and privacy settings
+- **Collaborative Features**: Comments, reactions, activity feeds, and real-time collaboration
+- **Location Tracking**: GPS coordinates, route tracking, and location analytics
 
 ## Data Flow
 
