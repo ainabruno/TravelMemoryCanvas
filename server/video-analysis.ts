@@ -175,7 +175,7 @@ async function analyzePhotosForVideo(photos: any[], template: VideoTemplate, set
 }
 
 async function generateVideoTimeline(photos: any[], analysis: any, settings: VideoSettings): Promise<any[]> {
-  const timeline = [];
+  const timeline: any[] = [];
   const photoDuration = settings.duration / photos.length;
   
   photos.forEach((photo, index) => {
@@ -225,7 +225,11 @@ function selectMusicTrack(genre: string, style: string, duration: number): strin
     }
   };
 
-  return musicLibrary[genre as keyof typeof musicLibrary]?.[style as keyof any] || 'default_track_01';
+  const genreLibrary = musicLibrary[genre as keyof typeof musicLibrary];
+  if (genreLibrary && typeof genreLibrary === 'object') {
+    return (genreLibrary as any)[style] || 'default_track_01';
+  }
+  return 'default_track_01';
 }
 
 function generateTransitions(photoCount: number, style: string, settings: VideoSettings): VideoTransition[] {
@@ -403,8 +407,9 @@ Réponds avec un JSON contenant uniquement les indices des photos sélectionnée
     console.error("Error selecting photos for video:", error);
     
     // Fallback: intelligent selection without AI
-    const step = Math.ceil(photos.length / maxPhotos);
-    return photos.filter((_, index) => index % step === 0).slice(0, maxPhotos).map(p => p.id);
+    const maxCount = Math.floor(duration * 0.5);
+    const step = Math.ceil(photos.length / maxCount);
+    return photos.filter((_, index) => index % step === 0).slice(0, maxCount).map(p => p.id);
   }
 }
 
