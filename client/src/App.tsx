@@ -12,6 +12,7 @@ import PhotoBooksPage from "@/pages/photo-books";
 import VideoGenerationPage from "@/pages/video-generation";
 import EnhancedMaps from "@/pages/enhanced-maps";
 import SocialImportPage from "@/pages/social-import";
+import TravelStatisticsPage from "@/pages/travel-statistics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/videos" component={VideoGenerationPage} />
       <Route path="/enhanced-maps" component={EnhancedMaps} />
       <Route path="/social-import" component={SocialImportPage} />
+      <Route path="/statistics" component={TravelStatisticsPage} />
       <Route component={NotFound} />
     </Switch>
   );
