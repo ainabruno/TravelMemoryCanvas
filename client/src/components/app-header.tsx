@@ -63,6 +63,10 @@ export default function AppHeader() {
                 <Share2 className="w-4 h-4" />
                 Partage
               </a>
+              <a href="/anonymization" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <Shield className="w-4 h-4" />
+                Anonymisation
+              </a>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
