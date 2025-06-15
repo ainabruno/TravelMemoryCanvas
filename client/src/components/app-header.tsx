@@ -20,6 +20,7 @@ export default function AppHeader() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
+            <NotificationCenter contributorName="Utilisateur" />
             <Button className="bg-adventure-blue text-white hover:bg-blue-700">
               <Plus className="w-4 h-4 mr-2" />
               New Trip
