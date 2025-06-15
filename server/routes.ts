@@ -1277,6 +1277,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Story Generation routes
+  app.post("/api/stories/generate", async (req, res) => {
+    try {
+      const { tripId, albumId, settings, customPrompt, photos, tripData } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      // Import OpenAI for story generation
+      const { generateTravelStory } = await import('./story-analysis');
+      
+      // Generate the travel story
+      const story = await generateTravelStory({
+        tripData,
+        photos: photos || [],
+        settings,
+        customPrompt
+      });
+      
+      res.json(story);
+    } catch (error) {
+      console.error("Story generation error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate story", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/stories", async (req, res) => {
+    try {
+      const storyData = req.body;
+      
+      // In a real application, you would store this in a stories table
+      // For now, we'll return the story with a generated ID
+      const savedStory = {
+        id: `story-${Date.now()}`,
+        ...storyData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(savedStory);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to save story", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/stories", async (req, res) => {
+    try {
+      const { tripId, albumId } = req.query;
+      
+      // Return mock stories for demonstration
+      const stories = [
+        {
+          id: "story-1",
+          title: "Mon aventure au Japon",
+          content: "Ce voyage au Japon restera gravé dans ma mémoire comme une immersion totale dans une culture fascinante...",
+          style: "narrative",
+          mood: "adventurous",
+          length: "medium",
+          wordCount: 456,
+          readingTime: 3,
+          generatedAt: "2025-06-14T10:00:00Z",
+          highlights: ["Temples de Kyoto", "Cuisine locale", "Rencontres authentiques"],
+          photos: []
+        }
+      ];
+      
+      res.json(stories);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch stories", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/photos/trip/:tripId", async (req, res) => {
+    try {
+      const tripId = parseInt(req.params.tripId);
+      const photos = await storage.getPhotosByTrip(tripId);
+      res.json(photos);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch trip photos", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/photos/album/:albumId", async (req, res) => {
+    try {
+      const albumId = parseInt(req.params.albumId);
+      const photos = await storage.getPhotosByAlbum(albumId);
+      res.json(photos);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch album photos", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
