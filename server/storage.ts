@@ -1,4 +1,4 @@
-import { trips, albums, photos, albumContributors, photoComments, albumActivity, photoReactions, collaborationSessions, type Trip, type Album, type Photo, type AlbumContributor, type PhotoComment, type AlbumActivity, type PhotoReaction, type CollaborationSession, type InsertTrip, type InsertAlbum, type InsertPhoto, type InsertAlbumContributor, type InsertPhotoComment, type InsertAlbumActivity, type InsertPhotoReaction, type InsertCollaborationSession } from "@shared/schema";
+import { trips, albums, photos, albumContributors, photoComments, albumActivity, photoReactions, collaborationSessions, userProfiles, userStats, userAchievements, userFollows, type Trip, type Album, type Photo, type AlbumContributor, type PhotoComment, type AlbumActivity, type PhotoReaction, type CollaborationSession, type UserProfile, type UserStats, type UserAchievement, type UserFollow, type InsertTrip, type InsertAlbum, type InsertPhoto, type InsertAlbumContributor, type InsertPhotoComment, type InsertAlbumActivity, type InsertPhotoReaction, type InsertCollaborationSession, type InsertUserProfile, type InsertUserStats, type InsertUserAchievement, type InsertUserFollow } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -54,6 +54,20 @@ export interface IStorage {
   createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession>;
   updateSessionActivity(sessionId: string): Promise<boolean>;
   endCollaborationSession(sessionId: string): Promise<boolean>;
+
+  // User profile operations
+  getUserProfile(userId: string): Promise<UserProfile | undefined>;
+  createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
+  updateUserProfile(userId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile | undefined>;
+  getUserStats(userId: string): Promise<UserStats | undefined>;
+  updateUserStats(userId: string, stats: Partial<InsertUserStats>): Promise<UserStats | undefined>;
+  getUserAchievements(userId: string): Promise<UserAchievement[]>;
+  createUserAchievement(achievement: InsertUserAchievement): Promise<UserAchievement>;
+  updateUserAchievement(id: number, achievement: Partial<InsertUserAchievement>): Promise<UserAchievement | undefined>;
+  followUser(followerId: string, followingId: string): Promise<UserFollow>;
+  unfollowUser(followerId: string, followingId: string): Promise<boolean>;
+  getUserFollowers(userId: string): Promise<UserFollow[]>;
+  getUserFollowing(userId: string): Promise<UserFollow[]>;
 
   // Stats
   getStats(): Promise<{
@@ -322,6 +336,105 @@ export class DatabaseStorage implements IStorage {
       .set({ isActive: false })
       .where(eq(collaborationSessions.sessionId, sessionId));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // User profile operations
+  async getUserProfile(userId: string): Promise<UserProfile | undefined> {
+    const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId));
+    return profile || undefined;
+  }
+
+  async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
+    const [newProfile] = await db.insert(userProfiles).values(profile).returning();
+    
+    // Create initial user stats
+    await db.insert(userStats).values({
+      userId: profile.userId,
+      totalPhotos: 0,
+      totalTrips: 0,
+      totalAlbums: 0,
+      totalCountries: 0,
+      totalLikes: 0,
+      totalComments: 0,
+      totalShares: 0,
+      featuredPhotos: 0,
+    });
+
+    return newProfile;
+  }
+
+  async updateUserProfile(userId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile | undefined> {
+    const [updatedProfile] = await db
+      .update(userProfiles)
+      .set({ ...profile, updatedAt: new Date() })
+      .where(eq(userProfiles.userId, userId))
+      .returning();
+    return updatedProfile || undefined;
+  }
+
+  async getUserStats(userId: string): Promise<UserStats | undefined> {
+    const [stats] = await db.select().from(userStats).where(eq(userStats.userId, userId));
+    return stats || undefined;
+  }
+
+  async updateUserStats(userId: string, stats: Partial<InsertUserStats>): Promise<UserStats | undefined> {
+    const [updatedStats] = await db
+      .update(userStats)
+      .set({ ...stats, updatedAt: new Date() })
+      .where(eq(userStats.userId, userId))
+      .returning();
+    return updatedStats || undefined;
+  }
+
+  async getUserAchievements(userId: string): Promise<UserAchievement[]> {
+    return await db.select().from(userAchievements)
+      .where(eq(userAchievements.userId, userId))
+      .orderBy(userAchievements.createdAt);
+  }
+
+  async createUserAchievement(achievement: InsertUserAchievement): Promise<UserAchievement> {
+    const [newAchievement] = await db.insert(userAchievements).values(achievement).returning();
+    return newAchievement;
+  }
+
+  async updateUserAchievement(id: number, achievement: Partial<InsertUserAchievement>): Promise<UserAchievement | undefined> {
+    const [updatedAchievement] = await db
+      .update(userAchievements)
+      .set(achievement)
+      .where(eq(userAchievements.id, id))
+      .returning();
+    return updatedAchievement || undefined;
+  }
+
+  async followUser(followerId: string, followingId: string): Promise<UserFollow> {
+    const [follow] = await db.insert(userFollows).values({
+      followerId,
+      followingId,
+    }).returning();
+    return follow;
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<boolean> {
+    const result = await db.delete(userFollows)
+      .where(
+        and(
+          eq(userFollows.followerId, followerId),
+          eq(userFollows.followingId, followingId)
+        )
+      );
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getUserFollowers(userId: string): Promise<UserFollow[]> {
+    return await db.select().from(userFollows)
+      .where(eq(userFollows.followingId, userId))
+      .orderBy(userFollows.createdAt);
+  }
+
+  async getUserFollowing(userId: string): Promise<UserFollow[]> {
+    return await db.select().from(userFollows)
+      .where(eq(userFollows.followerId, userId))
+      .orderBy(userFollows.createdAt);
   }
 
   async getStats(): Promise<{
