@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, numeric } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -11,6 +11,11 @@ export const trips = pgTable("trips", {
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date"),
   coverPhotoUrl: text("cover_photo_url"),
+  // GPS coordinates for trip location
+  latitude: numeric("latitude"),
+  longitude: numeric("longitude"),
+  // Route tracking data as JSON
+  routeData: text("route_data"), // JSON string of GPS coordinates for the route
 });
 
 export const albums = pgTable("albums", {
@@ -30,6 +35,9 @@ export const photos = pgTable("photos", {
   albumId: integer("album_id").references(() => albums.id),
   caption: text("caption"),
   location: text("location"),
+  // GPS coordinates for photos
+  latitude: numeric("latitude"),
+  longitude: numeric("longitude"),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   metadata: text("metadata"), // JSON string for EXIF data
 });
