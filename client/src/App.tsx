@@ -9,6 +9,7 @@ import SuggestionsPage from "@/pages/suggestions";
 import StoryGenerationPage from "@/pages/story-generation";
 import FaceDetectionPage from "@/pages/face-detection";
 import PhotoBooksPage from "@/pages/photo-books";
+import VideoGenerationPage from "@/pages/video-generation";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/stories" component={StoryGenerationPage} />
       <Route path="/faces" component={FaceDetectionPage} />
       <Route path="/photo-books" component={PhotoBooksPage} />
+      <Route path="/videos" component={VideoGenerationPage} />
       <Route component={NotFound} />
     </Switch>
   );
