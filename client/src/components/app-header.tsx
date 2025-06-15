@@ -1,4 +1,4 @@
-import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video, Map, Download, BarChart3, Users, GraduationCap } from "lucide-react";
+import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video, Map, Download, BarChart3, Users, GraduationCap, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/notification-center";
 
@@ -58,6 +58,10 @@ export default function AppHeader() {
               <a href="/mentoring" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
                 <GraduationCap className="w-4 h-4" />
                 Mentorat
+              </a>
+              <a href="/sharing" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <Share2 className="w-4 h-4" />
+                Partage
               </a>
             </nav>
           </div>

@@ -722,6 +722,227 @@ export type MentorshipResource = typeof mentorshipResources.$inferSelect;
 export type MentorshipProgram = typeof mentorshipPrograms.$inferSelect;
 export type MentorshipAchievement = typeof mentorshipAchievements.$inferSelect;
 
+// Granular Sharing System
+export const shareableItems = pgTable("shareable_items", {
+  id: serial("id").primaryKey(),
+  itemType: text("item_type").notNull(), // photo, album, trip, story, video
+  itemId: integer("item_id").notNull(),
+  ownerId: varchar("owner_id").notNull(),
+  shareCode: varchar("share_code").unique(), // unique sharing code
+  title: text("title").notNull(),
+  description: text("description"),
+  visibility: text("visibility").default("private"), // private, link, public, friends, custom
+  isActive: boolean("is_active").default(true),
+  expiresAt: timestamp("expires_at"),
+  passwordProtected: boolean("password_protected").default(false),
+  password: text("password"), // hashed password
+  downloadEnabled: boolean("download_enabled").default(false),
+  commentsEnabled: boolean("comments_enabled").default(true),
+  likesEnabled: boolean("likes_enabled").default(true),
+  viewCount: integer("view_count").default(0),
+  maxViews: integer("max_views"), // limit views
+  allowedDomains: text("allowed_domains").array(), // domain restrictions
+  watermarkEnabled: boolean("watermark_enabled").default(false),
+  qualityRestriction: text("quality_restriction"), // original, high, medium, low
+  geolocationHidden: boolean("geolocation_hidden").default(false),
+  metadataHidden: boolean("metadata_hidden").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const sharePermissions = pgTable("share_permissions", {
+  id: serial("id").primaryKey(),
+  shareId: integer("share_id").references(() => shareableItems.id).notNull(),
+  userId: varchar("user_id"),
+  email: text("email"),
+  role: text("role").notNull(), // viewer, commenter, editor, admin
+  permissions: jsonb("permissions"), // detailed permissions object
+  canView: boolean("can_view").default(true),
+  canDownload: boolean("can_download").default(false),
+  canComment: boolean("can_comment").default(false),
+  canLike: boolean("can_like").default(true),
+  canEdit: boolean("can_edit").default(false),
+  canShare: boolean("can_share").default(false),
+  canDelete: boolean("can_delete").default(false),
+  canManagePermissions: boolean("can_manage_permissions").default(false),
+  expiresAt: timestamp("expires_at"),
+  isRevoked: boolean("is_revoked").default(false),
+  notificationPreferences: jsonb("notification_preferences"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const shareActivity = pgTable("share_activity", {
+  id: serial("id").primaryKey(),
+  shareId: integer("share_id").references(() => shareableItems.id).notNull(),
+  userId: varchar("user_id"),
+  visitorId: varchar("visitor_id"), // for anonymous users
+  action: text("action").notNull(), // view, download, comment, like, share
+  itemType: text("item_type"),
+  itemId: integer("item_id"),
+  metadata: jsonb("metadata"), // additional action data
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  referrer: text("referrer"),
+  location: jsonb("location"), // geolocation data
+  sessionId: varchar("session_id"),
+  duration: integer("duration"), // time spent viewing
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const shareTemplates = pgTable("share_templates", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  templateType: text("template_type").notNull(), // photo, album, trip, custom
+  defaultPermissions: jsonb("default_permissions"),
+  settings: jsonb("settings"), // visibility, expiration, etc.
+  isPublic: boolean("is_public").default(false),
+  usageCount: integer("usage_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const shareCollections = pgTable("share_collections", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  collectionType: text("collection_type").notNull(), // favorites, portfolio, showcase
+  items: jsonb("items"), // array of share IDs
+  isPublic: boolean("is_public").default(false),
+  customUrl: varchar("custom_url").unique(),
+  theme: jsonb("theme"), // visual customization
+  layout: text("layout").default("grid"), // grid, masonry, slideshow
+  coverImage: text("cover_image"),
+  sortOrder: text("sort_order").default("date_desc"),
+  viewCount: integer("view_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const shareNotifications = pgTable("share_notifications", {
+  id: serial("id").primaryKey(),
+  shareId: integer("share_id").references(() => shareableItems.id).notNull(),
+  userId: varchar("user_id").notNull(),
+  type: text("type").notNull(), // view, comment, like, download, share
+  message: text("message").notNull(),
+  metadata: jsonb("metadata"),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const shareAnalytics = pgTable("share_analytics", {
+  id: serial("id").primaryKey(),
+  shareId: integer("share_id").references(() => shareableItems.id).notNull(),
+  date: timestamp("date").notNull(),
+  views: integer("views").default(0),
+  uniqueViews: integer("unique_views").default(0),
+  downloads: integer("downloads").default(0),
+  comments: integer("comments").default(0),
+  likes: integer("likes").default(0),
+  shares: integer("shares").default(0),
+  avgViewDuration: integer("avg_view_duration").default(0),
+  topCountries: jsonb("top_countries"),
+  topReferrers: jsonb("top_referrers"),
+  deviceStats: jsonb("device_stats"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const shareLinks = pgTable("share_links", {
+  id: serial("id").primaryKey(),
+  shareId: integer("share_id").references(() => shareableItems.id).notNull(),
+  linkType: text("link_type").notNull(), // direct, embed, qr, social
+  url: text("url").notNull(),
+  shortUrl: text("short_url").unique(),
+  qrCode: text("qr_code"), // base64 QR code
+  embedCode: text("embed_code"),
+  socialPlatform: text("social_platform"), // facebook, instagram, twitter, etc.
+  isActive: boolean("is_active").default(true),
+  clickCount: integer("click_count").default(0),
+  lastClickedAt: timestamp("last_clicked_at"),
+  customization: jsonb("customization"), // styling options
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Granular Sharing Relations
+export const shareableItemsRelations = relations(shareableItems, ({ one, many }) => ({
+  owner: one(userProfiles, {
+    fields: [shareableItems.ownerId],
+    references: [userProfiles.userId],
+  }),
+  permissions: many(sharePermissions),
+  activities: many(shareActivity),
+  notifications: many(shareNotifications),
+  analytics: many(shareAnalytics),
+  links: many(shareLinks),
+}));
+
+export const sharePermissionsRelations = relations(sharePermissions, ({ one }) => ({
+  shareableItem: one(shareableItems, {
+    fields: [sharePermissions.shareId],
+    references: [shareableItems.id],
+  }),
+  user: one(userProfiles, {
+    fields: [sharePermissions.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+export const shareActivityRelations = relations(shareActivity, ({ one }) => ({
+  shareableItem: one(shareableItems, {
+    fields: [shareActivity.shareId],
+    references: [shareableItems.id],
+  }),
+  user: one(userProfiles, {
+    fields: [shareActivity.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+export const shareTemplatesRelations = relations(shareTemplates, ({ one }) => ({
+  user: one(userProfiles, {
+    fields: [shareTemplates.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+export const shareCollectionsRelations = relations(shareCollections, ({ one }) => ({
+  user: one(userProfiles, {
+    fields: [shareCollections.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+// Insert and Select Types for Granular Sharing
+export const insertShareableItemSchema = createInsertSchema(shareableItems);
+export const insertSharePermissionSchema = createInsertSchema(sharePermissions);
+export const insertShareActivitySchema = createInsertSchema(shareActivity);
+export const insertShareTemplateSchema = createInsertSchema(shareTemplates);
+export const insertShareCollectionSchema = createInsertSchema(shareCollections);
+export const insertShareNotificationSchema = createInsertSchema(shareNotifications);
+export const insertShareAnalyticsSchema = createInsertSchema(shareAnalytics);
+export const insertShareLinkSchema = createInsertSchema(shareLinks);
+
+export type InsertShareableItem = z.infer<typeof insertShareableItemSchema>;
+export type InsertSharePermission = z.infer<typeof insertSharePermissionSchema>;
+export type InsertShareActivity = z.infer<typeof insertShareActivitySchema>;
+export type InsertShareTemplate = z.infer<typeof insertShareTemplateSchema>;
+export type InsertShareCollection = z.infer<typeof insertShareCollectionSchema>;
+export type InsertShareNotification = z.infer<typeof insertShareNotificationSchema>;
+export type InsertShareAnalytics = z.infer<typeof insertShareAnalyticsSchema>;
+export type InsertShareLink = z.infer<typeof insertShareLinkSchema>;
+
+export type ShareableItem = typeof shareableItems.$inferSelect;
+export type SharePermission = typeof sharePermissions.$inferSelect;
+export type ShareActivity = typeof shareActivity.$inferSelect;
+export type ShareTemplate = typeof shareTemplates.$inferSelect;
+export type ShareCollection = typeof shareCollections.$inferSelect;
+export type ShareNotification = typeof shareNotifications.$inferSelect;
+export type ShareAnalytics = typeof shareAnalytics.$inferSelect;
+export type ShareLink = typeof shareLinks.$inferSelect;
+
 export const insertTripSchema = createInsertSchema(trips).omit({
   id: true,
 });
