@@ -3,11 +3,29 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { MessageCircle, Heart, Smile, ThumbsUp, Send, Trash2 } from "lucide-react";
+import { 
+  MessageCircle, 
+  Heart, 
+  Smile, 
+  ThumbsUp, 
+  Send, 
+  Trash2, 
+  Reply, 
+  MoreHorizontal,
+  Pin,
+  Flag,
+  Edit3,
+  Check,
+  X
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -18,15 +36,34 @@ interface PhotoCommentsProps {
 }
 
 const reactionEmojis = {
-  like: { icon: ThumbsUp, emoji: "👍", label: "J'aime" },
-  love: { icon: Heart, emoji: "❤️", label: "Adore" },
-  laugh: { icon: Smile, emoji: "😄", label: "Drôle" },
-  wow: { icon: MessageCircle, emoji: "😮", label: "Wow" },
+  like: { icon: ThumbsUp, emoji: "👍", label: "J'aime", color: "text-blue-600" },
+  love: { icon: Heart, emoji: "❤️", label: "Adore", color: "text-red-500" },
+  laugh: { icon: Smile, emoji: "😄", label: "Drôle", color: "text-yellow-500" },
+  wow: { icon: MessageCircle, emoji: "😮", label: "Wow", color: "text-purple-500" },
+  celebrate: { icon: Smile, emoji: "🎉", label: "Célèbre", color: "text-green-500" },
+  amazing: { icon: ThumbsUp, emoji: "🤩", label: "Incroyable", color: "text-orange-500" },
 };
+
+interface Comment {
+  id: number;
+  content: string;
+  authorName: string;
+  authorEmail?: string;
+  createdAt: string;
+  parentId?: number;
+  replies?: Comment[];
+  isPinned?: boolean;
+  likesCount?: number;
+  isLiked?: boolean;
+}
 
 export default function PhotoComments({ photoId, contributorName, contributorEmail }: PhotoCommentsProps) {
   const [newComment, setNewComment] = useState("");
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
   const [showReactions, setShowReactions] = useState(false);
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'popular'>('newest');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
