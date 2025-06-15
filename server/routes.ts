@@ -643,6 +643,188 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Vision Analysis and Object Recognition routes
+  app.get("/api/photos/:id/recognition", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      
+      // For now, return mock data - in production this would be stored in database
+      // This simulates cached recognition results
+      const mockRecognitionData = {
+        objects: [
+          { name: "Architecture gothique", category: "monument", confidence: 0.95, description: "Façade ornée avec des voûtes caractéristiques" },
+          { name: "Touristes", category: "people", confidence: 0.88 },
+          { name: "Pavés", category: "object", confidence: 0.75 }
+        ],
+        landmarks: [],
+        food: [],
+        people: { count: 0, activities: [], emotions: [] },
+        activities: ["tourisme", "photographie"],
+        mood: "paisible et historique",
+        description: "Cette photo capture l'essence de l'architecture européenne avec ses détails gothiques remarquables.",
+        suggestedTags: ["architecture", "gothique", "tourisme", "histoire", "europe"],
+        confidence: 0.89
+      };
+      
+      res.json(mockRecognitionData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch recognition data", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/photos/:id/analyze", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const { photoUrl, analysisType } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      // Import vision analysis functions
+      const { analyzeImageWithVision } = await import('./vision-analysis');
+      
+      // Perform comprehensive analysis
+      const analysisResult = await analyzeImageWithVision(photoUrl);
+      
+      // In a real application, you would store this in the database
+      // For now, we'll return the result directly
+      
+      res.json(analysisResult);
+    } catch (error) {
+      console.error("Vision analysis error:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze photo", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/photos/:id/generate-description", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const { photoUrl } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { generateImageDescription } = await import('./vision-analysis');
+      
+      const description = await generateImageDescription(photoUrl);
+      
+      // Update photo description in database
+      await storage.updatePhoto(photoId, { caption: description });
+      
+      res.json({ description });
+    } catch (error) {
+      console.error("Description generation error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate description", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/photos/:id/identify-landmark", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const { photoUrl } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { identifyLandmark } = await import('./vision-analysis');
+      
+      const landmark = await identifyLandmark(photoUrl);
+      
+      if (landmark) {
+        // Update photo location if landmark identified
+        await storage.updatePhoto(photoId, { 
+          location: `${landmark.name}, ${landmark.location}` 
+        });
+      }
+      
+      res.json({ landmark });
+    } catch (error) {
+      console.error("Landmark identification error:", error);
+      res.status(500).json({ 
+        message: "Failed to identify landmark", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.put("/api/photos/:id/tags", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const { tags } = req.body;
+      
+      // In a real application, you would store tags in a separate table
+      // For now, we'll store them in the photo metadata
+      const photo = await storage.getPhoto(photoId);
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found" });
+      }
+      
+      const metadata = photo.metadata ? JSON.parse(photo.metadata) : {};
+      metadata.tags = tags;
+      
+      await storage.updatePhoto(photoId, { 
+        metadata: JSON.stringify(metadata) 
+      });
+      
+      res.json({ success: true, tags });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to update tags", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/photos/batch-analyze", async (req, res) => {
+    try {
+      const { photoIds } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { analyzeImageWithVision } = await import('./vision-analysis');
+      
+      const results = [];
+      
+      for (const photoId of photoIds) {
+        try {
+          const photo = await storage.getPhoto(photoId);
+          if (photo) {
+            const analysisResult = await analyzeImageWithVision(photo.url);
+            results.push({
+              photoId,
+              success: true,
+              result: analysisResult
+            });
+          }
+        } catch (error) {
+          results.push({
+            photoId,
+            success: false,
+            error: error instanceof Error ? error.message : "Analysis failed"
+          });
+        }
+      }
+      
+      res.json({ results });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to perform batch analysis", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
