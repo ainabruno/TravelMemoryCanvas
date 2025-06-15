@@ -15,6 +15,7 @@ import SocialImportPage from "@/pages/social-import";
 import TravelStatisticsPage from "@/pages/travel-statistics";
 import TravelGroupsPage from "@/pages/travel-groups";
 import MentoringPage from "@/pages/mentoring";
+import GranularSharingPage from "@/pages/granular-sharing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/statistics" component={TravelStatisticsPage} />
       <Route path="/groups" component={TravelGroupsPage} />
       <Route path="/mentoring" component={MentoringPage} />
+      <Route path="/sharing" component={GranularSharingPage} />
       <Route component={NotFound} />
     </Switch>
   );

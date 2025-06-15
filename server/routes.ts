@@ -3740,6 +3740,562 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Granular Sharing System API Routes
+  
+  // Get user's shared items
+  app.get('/api/sharing/items', async (req, res) => {
+    try {
+      const sharedItems = [
+        {
+          id: 1,
+          itemType: 'album',
+          itemId: 1,
+          ownerId: 'user_demo',
+          shareCode: 'alb_demo_2024_001',
+          title: 'Voyage en Italie 2024',
+          description: 'Mes plus belles photos de voyage en Italie du Nord, incluant Venise, Florence et les Cinque Terre.',
+          visibility: 'link',
+          isActive: true,
+          expiresAt: '2024-12-31T23:59:59Z',
+          passwordProtected: false,
+          downloadEnabled: true,
+          commentsEnabled: true,
+          likesEnabled: true,
+          viewCount: 142,
+          maxViews: 500,
+          allowedDomains: [],
+          watermarkEnabled: false,
+          qualityRestriction: 'high',
+          geolocationHidden: false,
+          metadataHidden: false,
+          createdAt: '2024-06-01T10:00:00Z',
+          updatedAt: '2024-06-15T14:30:00Z'
+        },
+        {
+          id: 2,
+          itemType: 'photo',
+          itemId: 15,
+          ownerId: 'user_demo',
+          shareCode: 'pht_demo_2024_002',
+          title: 'Coucher de soleil à Santorini',
+          description: 'Photo exclusive du coucher de soleil depuis Oia, Santorini.',
+          visibility: 'public',
+          isActive: true,
+          expiresAt: null,
+          passwordProtected: true,
+          downloadEnabled: false,
+          commentsEnabled: true,
+          likesEnabled: true,
+          viewCount: 89,
+          maxViews: null,
+          allowedDomains: [],
+          watermarkEnabled: true,
+          qualityRestriction: 'medium',
+          geolocationHidden: true,
+          metadataHidden: false,
+          createdAt: '2024-06-10T16:45:00Z',
+          updatedAt: '2024-06-14T09:20:00Z'
+        },
+        {
+          id: 3,
+          itemType: 'trip',
+          itemId: 3,
+          ownerId: 'user_demo',
+          shareCode: 'trp_demo_2024_003',
+          title: 'Road Trip Californie',
+          description: 'Itinéraire complet de notre road trip de 3 semaines en Californie avec photos, conseils et budget détaillé.',
+          visibility: 'friends',
+          isActive: true,
+          expiresAt: null,
+          passwordProtected: false,
+          downloadEnabled: true,
+          commentsEnabled: true,
+          likesEnabled: true,
+          viewCount: 67,
+          maxViews: 200,
+          allowedDomains: [],
+          watermarkEnabled: false,
+          qualityRestriction: 'original',
+          geolocationHidden: false,
+          metadataHidden: false,
+          createdAt: '2024-05-25T12:00:00Z',
+          updatedAt: '2024-06-12T18:45:00Z'
+        },
+        {
+          id: 4,
+          itemType: 'video',
+          itemId: 7,
+          ownerId: 'user_demo',
+          shareCode: 'vid_demo_2024_004',
+          title: 'Timelapse Aurora Boréale',
+          description: 'Timelapse exceptionnel des aurores boréales en Islande, filmé pendant 4 heures.',
+          visibility: 'custom',
+          isActive: true,
+          expiresAt: '2024-09-30T23:59:59Z',
+          passwordProtected: true,
+          downloadEnabled: false,
+          commentsEnabled: false,
+          likesEnabled: true,
+          viewCount: 234,
+          maxViews: 1000,
+          allowedDomains: ['photography.com', 'naturelove.fr'],
+          watermarkEnabled: true,
+          qualityRestriction: 'high',
+          geolocationHidden: false,
+          metadataHidden: true,
+          createdAt: '2024-05-15T08:30:00Z',
+          updatedAt: '2024-06-13T11:15:00Z'
+        },
+        {
+          id: 5,
+          itemType: 'story',
+          itemId: 2,
+          ownerId: 'user_demo',
+          shareCode: 'str_demo_2024_005',
+          title: 'Guide du Japon authentique',
+          description: 'Guide complet pour découvrir le Japon hors des sentiers battus, avec recommandations locales.',
+          visibility: 'private',
+          isActive: false,
+          expiresAt: null,
+          passwordProtected: false,
+          downloadEnabled: true,
+          commentsEnabled: true,
+          likesEnabled: true,
+          viewCount: 28,
+          maxViews: null,
+          allowedDomains: [],
+          watermarkEnabled: false,
+          qualityRestriction: 'original',
+          geolocationHidden: false,
+          metadataHidden: false,
+          createdAt: '2024-06-05T14:20:00Z',
+          updatedAt: '2024-06-11T16:30:00Z'
+        }
+      ];
+      
+      res.json(sharedItems);
+    } catch (error) {
+      console.error('Error fetching shared items:', error);
+      res.status(500).json({ message: 'Failed to fetch shared items' });
+    }
+  });
+
+  // Get permissions for a shared item
+  app.get('/api/sharing/permissions/:shareId', async (req, res) => {
+    try {
+      const shareId = parseInt(req.params.shareId);
+      
+      const permissions = [
+        {
+          id: 1,
+          shareId: shareId,
+          userId: 'user_friend_1',
+          email: 'marie.durand@email.com',
+          role: 'editor',
+          canView: true,
+          canDownload: true,
+          canComment: true,
+          canLike: true,
+          canEdit: true,
+          canShare: false,
+          canDelete: false,
+          canManagePermissions: false,
+          expiresAt: null,
+          isRevoked: false,
+          notificationPreferences: {
+            onView: false,
+            onComment: true,
+            onLike: false
+          },
+          createdAt: '2024-06-10T10:00:00Z',
+          updatedAt: '2024-06-10T10:00:00Z'
+        },
+        {
+          id: 2,
+          shareId: shareId,
+          userId: null,
+          email: 'photographe@studio.com',
+          role: 'viewer',
+          canView: true,
+          canDownload: false,
+          canComment: false,
+          canLike: true,
+          canEdit: false,
+          canShare: false,
+          canDelete: false,
+          canManagePermissions: false,
+          expiresAt: '2024-08-31T23:59:59Z',
+          isRevoked: false,
+          notificationPreferences: {
+            onView: false,
+            onComment: false,
+            onLike: false
+          },
+          createdAt: '2024-06-12T15:30:00Z',
+          updatedAt: '2024-06-12T15:30:00Z'
+        },
+        {
+          id: 3,
+          shareId: shareId,
+          userId: 'user_family_1',
+          email: 'papa@famille.com',
+          role: 'commenter',
+          canView: true,
+          canDownload: true,
+          canComment: true,
+          canLike: true,
+          canEdit: false,
+          canShare: true,
+          canDelete: false,
+          canManagePermissions: false,
+          expiresAt: null,
+          isRevoked: false,
+          notificationPreferences: {
+            onView: false,
+            onComment: true,
+            onLike: true
+          },
+          createdAt: '2024-06-08T09:15:00Z',
+          updatedAt: '2024-06-14T12:00:00Z'
+        }
+      ];
+      
+      res.json(permissions);
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+      res.status(500).json({ message: 'Failed to fetch permissions' });
+    }
+  });
+
+  // Get activity for a shared item
+  app.get('/api/sharing/activity/:shareId', async (req, res) => {
+    try {
+      const shareId = parseInt(req.params.shareId);
+      
+      const activities = [
+        {
+          id: 1,
+          shareId: shareId,
+          userId: 'user_friend_1',
+          visitorId: null,
+          action: 'view',
+          itemType: 'album',
+          itemId: 1,
+          metadata: { page: 'gallery', photoIndex: 5 },
+          ipAddress: '192.168.1.100',
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          referrer: 'https://wanderlust.com/dashboard',
+          location: { country: 'France', city: 'Paris' },
+          sessionId: 'sess_abc123',
+          duration: 180,
+          createdAt: '2024-06-15T14:30:00Z'
+        },
+        {
+          id: 2,
+          shareId: shareId,
+          userId: null,
+          visitorId: 'visitor_xyz789',
+          action: 'view',
+          itemType: 'album',
+          itemId: 1,
+          metadata: { page: 'gallery' },
+          ipAddress: '185.199.108.153',
+          userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+          referrer: 'https://google.com/search',
+          location: { country: 'Belgique', city: 'Bruxelles' },
+          sessionId: 'sess_def456',
+          duration: 45,
+          createdAt: '2024-06-15T13:45:00Z'
+        },
+        {
+          id: 3,
+          shareId: shareId,
+          userId: 'user_family_1',
+          visitorId: null,
+          action: 'comment',
+          itemType: 'photo',
+          itemId: 12,
+          metadata: { commentId: 567, text: 'Magnifique photo!' },
+          ipAddress: '172.16.0.1',
+          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+          referrer: 'https://wanderlust.com/shared/alb_demo_2024_001',
+          location: { country: 'France', city: 'Lyon' },
+          sessionId: 'sess_ghi789',
+          duration: 300,
+          createdAt: '2024-06-15T12:20:00Z'
+        },
+        {
+          id: 4,
+          shareId: shareId,
+          userId: 'user_friend_1',
+          visitorId: null,
+          action: 'like',
+          itemType: 'photo',
+          itemId: 8,
+          metadata: { photoTitle: 'Venise au coucher de soleil' },
+          ipAddress: '192.168.1.100',
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          referrer: 'https://wanderlust.com/shared/alb_demo_2024_001',
+          location: { country: 'France', city: 'Paris' },
+          sessionId: 'sess_abc123',
+          duration: 15,
+          createdAt: '2024-06-15T11:55:00Z'
+        },
+        {
+          id: 5,
+          shareId: shareId,
+          userId: null,
+          visitorId: 'visitor_mno012',
+          action: 'download',
+          itemType: 'photo',
+          itemId: 3,
+          metadata: { quality: 'high', fileSize: '2.4MB' },
+          ipAddress: '151.101.193.140',
+          userAgent: 'Mozilla/5.0 (X11; Linux x86_64)',
+          referrer: 'https://pinterest.com',
+          location: { country: 'Canada', city: 'Toronto' },
+          sessionId: 'sess_jkl012',
+          duration: 10,
+          createdAt: '2024-06-15T10:30:00Z'
+        }
+      ];
+      
+      res.json(activities);
+    } catch (error) {
+      console.error('Error fetching activity:', error);
+      res.status(500).json({ message: 'Failed to fetch activity' });
+    }
+  });
+
+  // Get share templates
+  app.get('/api/sharing/templates', async (req, res) => {
+    try {
+      const templates = [
+        {
+          id: 1,
+          userId: 'user_demo',
+          name: 'Partage Famille',
+          description: 'Modèle pour partager des photos de famille avec téléchargement autorisé et commentaires activés.',
+          templateType: 'photo',
+          defaultPermissions: {
+            visibility: 'friends',
+            downloadEnabled: true,
+            commentsEnabled: true,
+            likesEnabled: true,
+            watermarkEnabled: false,
+            qualityRestriction: 'high'
+          },
+          settings: {
+            expiresAt: null,
+            passwordProtected: false,
+            maxViews: null,
+            geolocationHidden: false,
+            metadataHidden: false
+          },
+          isPublic: false,
+          usageCount: 12,
+          createdAt: '2024-05-20T09:00:00Z',
+          updatedAt: '2024-06-10T14:30:00Z'
+        },
+        {
+          id: 2,
+          userId: 'user_demo',
+          name: 'Portfolio Professionnel',
+          description: 'Modèle pour présenter du travail professionnel avec filigrane et restrictions de téléchargement.',
+          templateType: 'album',
+          defaultPermissions: {
+            visibility: 'public',
+            downloadEnabled: false,
+            commentsEnabled: false,
+            likesEnabled: true,
+            watermarkEnabled: true,
+            qualityRestriction: 'medium'
+          },
+          settings: {
+            expiresAt: null,
+            passwordProtected: false,
+            maxViews: 1000,
+            geolocationHidden: true,
+            metadataHidden: true
+          },
+          isPublic: true,
+          usageCount: 8,
+          createdAt: '2024-05-15T11:30:00Z',
+          updatedAt: '2024-06-08T16:45:00Z'
+        },
+        {
+          id: 3,
+          userId: 'user_demo',
+          name: 'Voyage Privé',
+          description: 'Partage temporaire pour un voyage avec protection par mot de passe et expiration automatique.',
+          templateType: 'trip',
+          defaultPermissions: {
+            visibility: 'link',
+            downloadEnabled: true,
+            commentsEnabled: true,
+            likesEnabled: true,
+            watermarkEnabled: false,
+            qualityRestriction: 'original'
+          },
+          settings: {
+            expiresAt: '2024-12-31T23:59:59Z',
+            passwordProtected: true,
+            maxViews: 50,
+            geolocationHidden: false,
+            metadataHidden: false
+          },
+          isPublic: false,
+          usageCount: 5,
+          createdAt: '2024-06-01T13:15:00Z',
+          updatedAt: '2024-06-12T10:20:00Z'
+        }
+      ];
+      
+      res.json(templates);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      res.status(500).json({ message: 'Failed to fetch templates' });
+    }
+  });
+
+  // Get share links for an item
+  app.get('/api/sharing/links/:shareId', async (req, res) => {
+    try {
+      const shareId = parseInt(req.params.shareId);
+      
+      const links = [
+        {
+          id: 1,
+          shareId: shareId,
+          linkType: 'direct',
+          url: `https://wanderlust.app/share/alb_demo_2024_001`,
+          shortUrl: 'https://wl.st/Ab1c',
+          qrCode: null,
+          embedCode: null,
+          socialPlatform: null,
+          isActive: true,
+          clickCount: 45,
+          lastClickedAt: '2024-06-15T14:30:00Z',
+          customization: null,
+          createdAt: '2024-06-01T10:00:00Z'
+        },
+        {
+          id: 2,
+          shareId: shareId,
+          linkType: 'embed',
+          url: `https://wanderlust.app/embed/alb_demo_2024_001`,
+          shortUrl: null,
+          qrCode: null,
+          embedCode: `<iframe src="https://wanderlust.app/embed/alb_demo_2024_001" width="800" height="600" frameborder="0"></iframe>`,
+          socialPlatform: null,
+          isActive: true,
+          clickCount: 12,
+          lastClickedAt: '2024-06-14T09:15:00Z',
+          customization: {
+            width: 800,
+            height: 600,
+            theme: 'light',
+            showControls: true
+          },
+          createdAt: '2024-06-02T15:30:00Z'
+        },
+        {
+          id: 3,
+          shareId: shareId,
+          linkType: 'qr',
+          url: `https://wanderlust.app/share/alb_demo_2024_001`,
+          shortUrl: null,
+          qrCode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAA...',
+          embedCode: null,
+          socialPlatform: null,
+          isActive: true,
+          clickCount: 8,
+          lastClickedAt: '2024-06-13T16:45:00Z',
+          customization: {
+            size: 200,
+            logo: true,
+            backgroundColor: '#ffffff',
+            foregroundColor: '#000000'
+          },
+          createdAt: '2024-06-05T11:20:00Z'
+        }
+      ];
+      
+      res.json(links);
+    } catch (error) {
+      console.error('Error fetching share links:', error);
+      res.status(500).json({ message: 'Failed to fetch share links' });
+    }
+  });
+
+  // Create new share
+  app.post('/api/sharing/create', async (req, res) => {
+    try {
+      const shareData = req.body;
+      
+      const newShare = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        ownerId: 'user_demo',
+        shareCode: `${shareData.itemType.substring(0,3)}_${Date.now()}`,
+        ...shareData,
+        isActive: true,
+        viewCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(newShare);
+    } catch (error) {
+      console.error('Error creating share:', error);
+      res.status(500).json({ message: 'Failed to create share' });
+    }
+  });
+
+  // Update permissions for a share
+  app.put('/api/sharing/:shareId/permissions', async (req, res) => {
+    try {
+      const shareId = parseInt(req.params.shareId);
+      const permissionsData = req.body;
+      
+      const updatedPermissions = {
+        shareId: shareId,
+        ...permissionsData,
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(updatedPermissions);
+    } catch (error) {
+      console.error('Error updating permissions:', error);
+      res.status(500).json({ message: 'Failed to update permissions' });
+    }
+  });
+
+  // Generate share link
+  app.post('/api/sharing/:shareId/links', async (req, res) => {
+    try {
+      const shareId = parseInt(req.params.shareId);
+      const { linkType } = req.body;
+      
+      const newLink = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        shareId: shareId,
+        linkType: linkType,
+        url: `https://wanderlust.app/share/generated_${Date.now()}`,
+        shortUrl: linkType === 'direct' ? `https://wl.st/${Math.random().toString(36).substring(2, 8)}` : null,
+        qrCode: linkType === 'qr' ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAA...' : null,
+        embedCode: linkType === 'embed' ? `<iframe src="https://wanderlust.app/embed/generated_${Date.now()}" width="800" height="600"></iframe>` : null,
+        isActive: true,
+        clickCount: 0,
+        createdAt: new Date().toISOString()
+      };
+      
+      res.json(newLink);
+    } catch (error) {
+      console.error('Error generating link:', error);
+      res.status(500).json({ message: 'Failed to generate link' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
