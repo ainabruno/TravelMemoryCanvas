@@ -808,107 +808,109 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
             <div className="text-center py-8 text-red-500">
               <p>Erreur lors du chargement des vidéos</p>
             </div>
+          ) : !existingVideos || !Array.isArray(existingVideos) ? (
+            <div className="text-center py-8 text-yellow-600">
+              <p>Données vidéo non disponibles</p>
+            </div>
+          ) : existingVideos.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Video className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune vidéo créée</h3>
+              <p className="text-gray-600 mb-4">Commencez par créer votre première vidéo avec vos photos de voyage</p>
+              <Button 
+                variant="outline" 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                Créer une vidéo
+              </Button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {existingVideos && Array.isArray(existingVideos) && existingVideos.length > 0 ? (
-                existingVideos.map((video: any) => (
-                  <div key={video.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow bg-white">
-                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                      {video.thumbnailUrl ? (
-                        <img 
-                          src={video.thumbnailUrl} 
-                          alt={video.title}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="text-center">
-                          <Video className="w-16 h-16 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-500">Aperçu vidéo</p>
+              {existingVideos.map((video: any) => (
+                <div key={video.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow bg-white">
+                  <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    {video.thumbnailUrl ? (
+                      <img 
+                        src={video.thumbnailUrl} 
+                        alt={video.title}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <Video className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">Aperçu vidéo</p>
+                      </div>
+                    )}
+                    {video.status === 'generating' && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                        <div className="text-center text-white">
+                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mx-auto mb-2"></div>
+                          <p className="text-sm">{video.progress}% terminé</p>
                         </div>
-                      )}
-                      {video.status === 'generating' && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                          <div className="text-center text-white">
-                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mx-auto mb-2"></div>
-                            <p className="text-sm">{video.progress}% terminé</p>
-                          </div>
-                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-semibold text-lg text-gray-900 mb-1">{video.title}</h4>
+                      {video.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{video.description}</p>
                       )}
                     </div>
                     
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="font-semibold text-lg text-gray-900 mb-1">{video.title}</h4>
-                        {video.description && (
-                          <p className="text-sm text-gray-600 line-clamp-2">{video.description}</p>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span>{formatTime(video.duration)}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {video.quality}
-                        </Badge>
-                        <Badge 
-                          variant={video.status === 'ready' ? 'default' : video.status === 'generating' ? 'secondary' : 'destructive'}
-                          className="text-xs"
-                        >
-                          {video.status === 'ready' ? 'Prêt' : video.status === 'generating' ? 'Génération...' : 'Erreur'}
-                        </Badge>
-                      </div>
-                      
-                      {video.metadata && (
-                        <div className="text-xs text-gray-500 space-y-1">
-                          <div className="flex justify-between">
-                            <span>{video.metadata.photoCount} photos</span>
-                            <span>{video.metadata.fileSize}</span>
-                          </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatTime(video.duration)}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {video.quality}
+                      </Badge>
+                      <Badge 
+                        variant={video.status === 'ready' ? 'default' : video.status === 'generating' ? 'secondary' : 'destructive'}
+                        className="text-xs"
+                      >
+                        {video.status === 'ready' ? 'Prêt' : video.status === 'generating' ? 'Génération...' : 'Erreur'}
+                      </Badge>
+                    </div>
+                    
+                    {video.metadata && (
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <div className="flex justify-between">
+                          <span>{video.metadata.photoCount} photos</span>
+                          <span>{video.metadata.fileSize}</span>
                         </div>
-                      )}
-                      
-                      <div className="flex gap-2 pt-2">
-                        <Button 
-                          size="sm" 
-                          disabled={video.status !== 'ready'}
-                          className="flex-1"
-                        >
-                          <Play className="w-3 h-3 mr-1" />
-                          Lire
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          disabled={video.status !== 'ready'}
-                        >
-                          <Download className="w-3 h-3" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          disabled={video.status !== 'ready'}
-                        >
-                          <Share className="w-3 h-3" />
-                        </Button>
                       </div>
+                    )}
+                    
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        size="sm" 
+                        disabled={video.status !== 'ready'}
+                        className="flex-1"
+                      >
+                        <Play className="w-3 h-3 mr-1" />
+                        Lire
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        disabled={video.status !== 'ready'}
+                      >
+                        <Download className="w-3 h-3" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        disabled={video.status !== 'ready'}
+                      >
+                        <Share className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12">
-                  <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <Video className="w-12 h-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune vidéo créée</h3>
-                  <p className="text-gray-600 mb-4">Commencez par créer votre première vidéo avec vos photos de voyage</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  >
-                    Créer une vidéo
-                  </Button>
                 </div>
-              )}
+              ))}
             </div>
           )}
         </CardContent>
