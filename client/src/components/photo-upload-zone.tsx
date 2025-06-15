@@ -48,9 +48,12 @@ export default function PhotoUploadZone() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.gif', '.bmp', '.tiff']
     },
-    maxFiles: 10,
+    maxFiles: 20,
+    multiple: true,
+    noClick: false,
+    noKeyboard: false,
   });
 
   return (
@@ -65,8 +68,16 @@ export default function PhotoUploadZone() {
       <CloudUpload className="text-4xl text-slate-400 mb-4 mx-auto" />
       <h3 className="text-lg font-semibold text-slate-900 mb-2">Upload Your Travel Photos</h3>
       <p className="text-slate-600 mb-4">
-        {isDragActive ? 'Drop your photos here...' : 'Drag and drop your photos here, or click to browse'}
+        {isDragActive ? 
+          'Drop your photos here...' : 
+          'Drag multiple photos here or click to select up to 20 files'
+        }
       </p>
+      {uploadMutation.isPending && (
+        <div className="text-sm text-adventure-blue mb-2">
+          Uploading photos...
+        </div>
+      )}
       <Button 
         variant="outline" 
         disabled={uploadMutation.isPending}
