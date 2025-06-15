@@ -51,6 +51,14 @@ export default function AppHeader() {
                 <BarChart3 className="w-4 h-4" />
                 Statistiques
               </a>
+              <a href="/groups" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                Groupes
+              </a>
+              <a href="/mentoring" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <GraduationCap className="w-4 h-4" />
+                Mentorat
+              </a>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
