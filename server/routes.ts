@@ -134,6 +134,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shared album routes
+  app.post("/api/albums/shared", async (req, res) => {
+    try {
+      const albumData = insertAlbumSchema.parse(req.body);
+      const sharedAlbum = await storage.createSharedAlbum(albumData);
+      res.status(201).json(sharedAlbum);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid album data", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/albums/shared/:shareCode", async (req, res) => {
+    try {
+      const shareCode = req.params.shareCode;
+      const album = await storage.getSharedAlbum(shareCode);
+      if (!album) {
+        return res.status(404).json({ message: "Shared album not found" });
+      }
+      
+      const contributors = await storage.getContributors(album.id);
+      const photos = await storage.getPhotosByAlbum(album.id);
+      
+      res.json({
+        ...album,
+        contributors,
+        photos
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch shared album", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/albums/:id/contributors", async (req, res) => {
+    try {
+      const albumId = parseInt(req.params.id);
+      const contributorData = {
+        contributorName: req.body.contributorName,
+        contributorEmail: req.body.contributorEmail,
+        role: req.body.role || "contributor",
+        canUpload: req.body.canUpload !== undefined ? req.body.canUpload : true,
+        canEdit: req.body.canEdit !== undefined ? req.body.canEdit : false,
+        canDelete: req.body.canDelete !== undefined ? req.body.canDelete : false,
+      };
+      
+      const contributor = await storage.addContributor(albumId, { ...contributorData, albumId });
+      res.status(201).json(contributor);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to add contributor", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
