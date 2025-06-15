@@ -201,6 +201,8 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<GeneratedVideo | null>(null);
   const [playbackInterval, setPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [videoPhotos, setVideoPhotos] = useState<any[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -902,9 +904,21 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                         size="sm" 
                         disabled={video.status !== 'ready'}
                         className="flex-1"
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedVideo(video);
                           setShowVideoPlayer(true);
+                          
+                          // Load photos for this video
+                          try {
+                            const response = await apiRequest('GET', `/api/videos/${video.id}/photos`);
+                            const photos = await response.json();
+                            setVideoPhotos(photos);
+                            setCurrentPhotoIndex(0);
+                            setPlaybackTime(0);
+                          } catch (error) {
+                            console.error('Error loading video photos:', error);
+                            setVideoPhotos([]);
+                          }
                         }}
                       >
                         <Play className="w-3 h-3 mr-1" />
@@ -963,22 +977,58 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
             {/* Video player container */}
             <div className="bg-black rounded-lg overflow-hidden">
               <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center relative">
-                {/* Video preview with generated thumbnail */}
+                {/* Video slideshow with actual photos */}
                 <div className="absolute inset-0">
-                  <img 
-                    src={selectedVideo.thumbnailUrl} 
-                    alt={selectedVideo.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-4 mx-auto">
-                        <Play className="w-8 h-8 ml-1" />
+                  {videoPhotos.length > 0 && videoPhotos[currentPhotoIndex] ? (
+                    <div className="relative w-full h-full">
+                      <img 
+                        src={videoPhotos[currentPhotoIndex].url} 
+                        alt={videoPhotos[currentPhotoIndex].caption}
+                        className="w-full h-full object-cover transition-opacity duration-1000"
+                      />
+                      {/* Photo caption overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        <p className="text-white text-sm font-medium">
+                          {videoPhotos[currentPhotoIndex].caption}
+                        </p>
+                        {videoPhotos[currentPhotoIndex].location && (
+                          <p className="text-gray-300 text-xs mt-1 flex items-center">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            {videoPhotos[currentPhotoIndex].location}
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm opacity-75">Aperçu de la vidéo générée</p>
-                      <p className="text-xs opacity-50 mt-1">Durée : {selectedVideo.duration}s • {selectedVideo.quality}</p>
+                      {/* Photo counter */}
+                      <div className="absolute top-4 right-4 bg-black bg-opacity-50 rounded-full px-3 py-1">
+                        <span className="text-white text-xs">
+                          {currentPhotoIndex + 1} / {videoPhotos.length}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <img 
+                        src={selectedVideo.thumbnailUrl} 
+                        alt={selectedVideo.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Play/Pause overlay when not playing */}
+                  {!isPlaying && (
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-4 mx-auto">
+                          <Play className="w-8 h-8 ml-1" />
+                        </div>
+                        <p className="text-sm opacity-75">
+                          {videoPhotos.length > 0 ? `${videoPhotos.length} photos` : 'Aperçu de la vidéo'}
+                        </p>
+                        <p className="text-xs opacity-50 mt-1">Durée : {selectedVideo.duration}s • {selectedVideo.quality}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1029,8 +1079,17 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                               clearInterval(interval);
                               setIsPlaying(false);
                               setPlaybackTime(0);
+                              setCurrentPhotoIndex(0);
                               return 0;
                             }
+                            
+                            // Change photo every 8 seconds for cinematic effect
+                            if (videoPhotos.length > 0 && newTime % 8 === 0) {
+                              setCurrentPhotoIndex(prevIndex => 
+                                (prevIndex + 1) % videoPhotos.length
+                              );
+                            }
+                            
                             return newTime;
                           });
                         }, 1000);
