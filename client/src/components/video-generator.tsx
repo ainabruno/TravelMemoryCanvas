@@ -198,6 +198,9 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
   const [playbackTime, setPlaybackTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<GeneratedVideo | null>(null);
+  const [playbackInterval, setPlaybackInterval] = useState<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -899,6 +902,10 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                         size="sm" 
                         disabled={video.status !== 'ready'}
                         className="flex-1"
+                        onClick={() => {
+                          setSelectedVideo(video);
+                          setShowVideoPlayer(true);
+                        }}
                       >
                         <Play className="w-3 h-3 mr-1" />
                         Lire
@@ -925,6 +932,176 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
           )}
         </CardContent>
       </Card>
+
+      {/* Video Player Modal */}
+      {showVideoPlayer && selectedVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="relative w-full max-w-4xl mx-4">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                // Clear any active playback interval
+                if (playbackInterval) {
+                  clearInterval(playbackInterval);
+                  setPlaybackInterval(null);
+                }
+                setShowVideoPlayer(false);
+                setSelectedVideo(null);
+                setIsPlaying(false);
+                setPlaybackTime(0);
+              }}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 z-10"
+            >
+              <div className="flex items-center gap-2">
+                <span>Fermer</span>
+                <div className="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                  ×
+                </div>
+              </div>
+            </button>
+
+            {/* Video player container */}
+            <div className="bg-black rounded-lg overflow-hidden">
+              <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center relative">
+                {/* Video preview with generated thumbnail */}
+                <div className="absolute inset-0">
+                  <img 
+                    src={selectedVideo.thumbnailUrl} 
+                    alt={selectedVideo.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-4 mx-auto">
+                        <Play className="w-8 h-8 ml-1" />
+                      </div>
+                      <p className="text-sm opacity-75">Aperçu de la vidéo générée</p>
+                      <p className="text-xs opacity-50 mt-1">Durée : {selectedVideo.duration}s • {selectedVideo.quality}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Video controls */}
+              <div className="bg-gray-900 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-semibold">{selectedVideo.title}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <Badge variant="secondary">{selectedVideo.template.replace('_', ' ')}</Badge>
+                    <span>{selectedVideo.metadata.photoCount} photos</span>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mb-3">
+                  <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-300"
+                      style={{ width: `${(playbackTime / selectedVideo.duration) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>{Math.floor(playbackTime / 60)}:{(playbackTime % 60).toString().padStart(2, '0')}</span>
+                    <span>{Math.floor(selectedVideo.duration / 60)}:{(selectedVideo.duration % 60).toString().padStart(2, '0')}</span>
+                  </div>
+                </div>
+
+                {/* Control buttons */}
+                <div className="flex items-center justify-center gap-4">
+                  <Button variant="ghost" size="sm" className="text-white hover:text-gray-300">
+                    <SkipBack className="w-4 h-4" />
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="lg"
+                    className="text-white hover:text-gray-300 w-12 h-12 rounded-full"
+                    onClick={() => {
+                      const newIsPlaying = !isPlaying;
+                      setIsPlaying(newIsPlaying);
+                      
+                      if (newIsPlaying) {
+                        // Start playback simulation
+                        const interval = setInterval(() => {
+                          setPlaybackTime(prevTime => {
+                            const newTime = prevTime + 1;
+                            if (newTime >= selectedVideo!.duration) {
+                              clearInterval(interval);
+                              setIsPlaying(false);
+                              setPlaybackTime(0);
+                              return 0;
+                            }
+                            return newTime;
+                          });
+                        }, 1000);
+                        setPlaybackInterval(interval);
+                        
+                        toast({
+                          description: "Aperçu de la vidéo générée",
+                          duration: 2000,
+                        });
+                      } else {
+                        // Pause playback
+                        if (playbackInterval) {
+                          clearInterval(playbackInterval);
+                          setPlaybackInterval(null);
+                        }
+                        toast({
+                          description: "Vidéo mise en pause",
+                          duration: 2000,
+                        });
+                      }
+                    }}
+                  >
+                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                  </Button>
+                  
+                  <Button variant="ghost" size="sm" className="text-white hover:text-gray-300">
+                    <SkipForward className="w-4 h-4" />
+                  </Button>
+                  
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button variant="ghost" size="sm" className="text-white hover:text-gray-300">
+                      {volume > 0 ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                    </Button>
+                    <div className="w-20">
+                      <Slider
+                        value={[volume * 100]}
+                        onValueChange={(value) => setVolume(value[0] / 100)}
+                        max={100}
+                        step={1}
+                        className="text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Video metadata */}
+                <div className="mt-4 pt-3 border-t border-gray-700">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-gray-400">Qualité</div>
+                      <div className="text-white font-medium">{selectedVideo.quality}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400">Format</div>
+                      <div className="text-white font-medium">{selectedVideo.aspectRatio}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400">Transitions</div>
+                      <div className="text-white font-medium">{selectedVideo.metadata.transitionCount}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400">Musique</div>
+                      <div className="text-white font-medium">{selectedVideo.metadata.musicTrack || 'Aucune'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
