@@ -5,26 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { 
   MapPin, 
   Star, 
   Calendar, 
-  Users, 
-  Plane, 
   Clock,
   Heart,
-  TrendingUp,
   Filter,
   Search,
   Navigation,
-  Globe,
-  Camera,
-  Utensils,
   Building,
   Trees,
+  Globe,
   Sparkles,
   RefreshCw,
   Plus
@@ -34,39 +27,17 @@ interface LocationSuggestion {
   id: string;
   name: string;
   country: string;
-  region: string;
-  category: 'city' | 'nature' | 'beach' | 'mountain' | 'cultural' | 'adventure';
+  category: string;
   description: string;
   highlights: string[];
   bestTime: string;
   duration: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  budget: 'low' | 'medium' | 'high';
+  budget: string;
   rating: number;
   imageUrl: string;
-  latitude: number;
-  longitude: number;
-  weatherScore: number;
-  popularityScore: number;
   matchScore: number;
-  distance?: number;
-  travelTime?: string;
   estimatedCost?: number;
   activities: string[];
-  nearbyAttractions: string[];
-  localCuisine: string[];
-  safetyRating: number;
-  touristSeason: 'low' | 'medium' | 'high';
-  accessibility: boolean;
-}
-
-interface SuggestionFilters {
-  budget: 'any' | 'low' | 'medium' | 'high';
-  categories: string[];
-  weatherImportance: boolean;
-  safetyImportance: boolean;
-  avoidCrowds: boolean;
-  accessibilityNeeded: boolean;
 }
 
 const categoryIcons = {
@@ -74,8 +45,8 @@ const categoryIcons = {
   nature: Trees,
   beach: Globe,
   mountain: Navigation,
-  cultural: Camera,
-  adventure: TrendingUp,
+  cultural: Building,
+  adventure: Navigation,
 };
 
 const categoryColors = {
@@ -87,45 +58,38 @@ const categoryColors = {
   adventure: "bg-orange-100 text-orange-800",
 };
 
-export default function LocationSuggestions() {
+export default function SimpleLocationSuggestions() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<SuggestionFilters>({
-    budget: 'any',
-    categories: [],
-    weatherImportance: true,
-    safetyImportance: true,
-    avoidCrowds: false,
-    accessibilityNeeded: false,
-  });
+  const [selectedBudget, setSelectedBudget] = useState('any');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch user travel history for personalization
-  const { data: travelHistory = [] } = useQuery({
+  // Fetch travel history
+  const { data: travelHistory = {} } = useQuery({
     queryKey: ['/api/analytics/travel-history'],
     queryFn: () => apiRequest('GET', '/api/analytics/travel-history').then(res => res.json()),
   });
 
-  // Fetch location suggestions
+  // Fetch suggestions
   const { data: suggestions = [], isLoading, refetch } = useQuery({
-    queryKey: ['/api/suggestions/locations', filters, searchQuery],
+    queryKey: ['/api/suggestions/locations', selectedBudget, selectedCategories, searchQuery],
     queryFn: () => apiRequest('POST', '/api/suggestions/locations', {
-      filters,
+      filters: {
+        budget: selectedBudget,
+        categories: selectedCategories,
+        weatherImportance: true,
+        safetyImportance: true,
+        avoidCrowds: false,
+        accessibilityNeeded: false,
+      },
       searchQuery,
       userHistory: travelHistory
     }).then(res => res.json()),
   });
 
-  // Get current location
-  const getCurrentLocation = () => {
-    toast({
-      title: "Position activée",
-      description: "Les suggestions sont personnalisées selon votre localisation",
-    });
-  };
-
-  // Save location as favorite
+  // Save favorite
   const saveFavoriteMutation = useMutation({
     mutationFn: async (location: LocationSuggestion) => {
       const response = await apiRequest('POST', '/api/favorites/locations', {
@@ -133,7 +97,6 @@ export default function LocationSuggestions() {
         name: location.name,
         country: location.country,
         category: location.category,
-        coordinates: { lat: location.latitude, lng: location.longitude }
       });
       return response.json();
     },
@@ -142,11 +105,10 @@ export default function LocationSuggestions() {
         title: "Lieu sauvegardé",
         description: "Ajouté à vos favoris",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
     },
   });
 
-  // Create trip from suggestion
+  // Create trip
   const createTripMutation = useMutation({
     mutationFn: async (location: LocationSuggestion) => {
       const response = await apiRequest('POST', '/api/trips', {
@@ -155,9 +117,6 @@ export default function LocationSuggestions() {
         location: `${location.name}, ${location.country}`,
         startDate: new Date().toISOString(),
         endDate: null,
-        suggestedDuration: location.duration,
-        suggestedBudget: location.budget,
-        coordinates: { lat: location.latitude, lng: location.longitude }
       });
       return response.json();
     },
@@ -170,17 +129,12 @@ export default function LocationSuggestions() {
     },
   });
 
-  const updateFilters = (key: keyof SuggestionFilters, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
   const toggleCategory = (category: string) => {
-    setFilters(prev => ({
-      ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
-    }));
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   const getMatchScoreColor = (score: number) => {
@@ -191,17 +145,15 @@ export default function LocationSuggestions() {
   };
 
   const renderSuggestionCard = (suggestion: LocationSuggestion) => {
-    const IconComponent = categoryIcons[suggestion.category] || MapPin;
-    const categoryColor = categoryColors[suggestion.category] || categoryColors.city;
+    const IconComponent = categoryIcons[suggestion.category as keyof typeof categoryIcons] || MapPin;
+    const categoryColor = categoryColors[suggestion.category as keyof typeof categoryColors] || categoryColors.city;
 
     return (
       <Card key={suggestion.id} className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="relative">
-          <img 
-            src={suggestion.imageUrl} 
-            alt={suggestion.name}
-            className="w-full h-48 object-cover"
-          />
+          <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+            <IconComponent className="w-16 h-16 text-gray-400" />
+          </div>
           <div className="absolute top-3 right-3">
             <Badge className={`${categoryColor} font-medium`}>
               <IconComponent className="w-3 h-3 mr-1" />
@@ -229,7 +181,7 @@ export default function LocationSuggestions() {
             </h3>
             <p className="text-gray-600 text-sm flex items-center gap-1">
               <MapPin className="w-3 h-3" />
-              {suggestion.country}, {suggestion.region}
+              {suggestion.country}
             </p>
           </div>
 
@@ -237,7 +189,6 @@ export default function LocationSuggestions() {
             {suggestion.description}
           </p>
 
-          {/* Key Information */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3 text-blue-600" />
@@ -247,23 +198,19 @@ export default function LocationSuggestions() {
               <Clock className="w-3 h-3 text-green-600" />
               <span>{suggestion.bestTime}</span>
             </div>
-            {suggestion.distance && (
-              <div className="flex items-center gap-1">
-                <Navigation className="w-3 h-3 text-purple-600" />
-                <span>{Math.round(suggestion.distance)} km</span>
-              </div>
-            )}
             {suggestion.estimatedCost && (
               <div className="flex items-center gap-1">
                 <span className="text-orange-600">€</span>
                 <span>{suggestion.estimatedCost}€</span>
               </div>
             )}
+            <div className="flex items-center gap-1">
+              <span className="text-purple-600">Budget: {suggestion.budget}</span>
+            </div>
           </div>
 
-          {/* Highlights */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium">Points forts</Label>
+            <span className="text-xs font-medium">Points forts</span>
             <div className="flex flex-wrap gap-1">
               {suggestion.highlights.slice(0, 3).map((highlight, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
@@ -273,21 +220,6 @@ export default function LocationSuggestions() {
             </div>
           </div>
 
-          {/* Activities */}
-          {suggestion.activities.length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-xs font-medium">Activités</Label>
-              <div className="flex flex-wrap gap-1">
-                {suggestion.activities.slice(0, 4).map((activity, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {activity}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             <Button
               size="sm"
@@ -327,25 +259,15 @@ export default function LocationSuggestions() {
             Découvrez de nouveaux lieux personnalisés selon vos préférences
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={getCurrentLocation}
-            size="sm"
-          >
-            <Navigation className="w-4 h-4 mr-2" />
-            Ma position
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => refetch()}
-            disabled={isLoading}
-            size="sm"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualiser
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          onClick={() => refetch()}
+          disabled={isLoading}
+          size="sm"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Actualiser
+        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -374,12 +296,12 @@ export default function LocationSuggestions() {
             <div className="space-y-4 pt-4 border-t">
               {/* Categories */}
               <div>
-                <Label className="text-sm font-medium">Catégories</Label>
+                <span className="text-sm font-medium">Catégories</span>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {Object.entries(categoryIcons).map(([category, IconComponent]) => (
                     <Button
                       key={category}
-                      variant={filters.categories.includes(category) ? "default" : "outline"}
+                      variant={selectedCategories.includes(category) ? "default" : "outline"}
                       size="sm"
                       onClick={() => toggleCategory(category)}
                       className="flex items-center gap-1"
@@ -391,63 +313,22 @@ export default function LocationSuggestions() {
                 </div>
               </div>
 
-              {/* Duration removed for simplicity */}
-
               {/* Budget */}
               <div>
-                <Label className="text-sm font-medium">Budget</Label>
+                <span className="text-sm font-medium">Budget</span>
                 <div className="flex gap-2 mt-2">
                   {['any', 'low', 'medium', 'high'].map((budget) => (
                     <Button
                       key={budget}
-                      variant={filters.budget === budget ? "default" : "outline"}
+                      variant={selectedBudget === budget ? "default" : "outline"}
                       size="sm"
-                      onClick={() => updateFilters('budget', budget)}
+                      onClick={() => setSelectedBudget(budget)}
                     >
                       {budget === 'any' ? 'Tous' : 
                        budget === 'low' ? 'Économique' :
                        budget === 'medium' ? 'Moyen' : 'Élevé'}
                     </Button>
                   ))}
-                </div>
-              </div>
-
-              {/* Preferences */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="weather"
-                    checked={filters.weatherImportance}
-                    onCheckedChange={(checked) => updateFilters('weatherImportance', checked)}
-                  />
-                  <Label htmlFor="weather" className="text-sm">Météo favorable</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="safety"
-                    checked={filters.safetyImportance}
-                    onCheckedChange={(checked) => updateFilters('safetyImportance', checked)}
-                  />
-                  <Label htmlFor="safety" className="text-sm">Sécurité prioritaire</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="crowds"
-                    checked={filters.avoidCrowds}
-                    onCheckedChange={(checked) => updateFilters('avoidCrowds', checked)}
-                  />
-                  <Label htmlFor="crowds" className="text-sm">Éviter les foules</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="accessibility"
-                    checked={filters.accessibilityNeeded}
-                    onCheckedChange={(checked) => updateFilters('accessibilityNeeded', checked)}
-                  />
-                  <Label htmlFor="accessibility" className="text-sm">Accessibilité</Label>
                 </div>
               </div>
             </div>
