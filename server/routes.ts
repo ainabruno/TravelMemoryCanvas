@@ -1998,7 +1998,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/maps/enhanced-data', async (req, res) => {
     try {
       const { tripId, startDate, endDate, style } = req.query;
-      const photos = await storage.getPhotos();
+      let photos = await storage.getPhotos();
+
+      // Add demo geotagged photos if no real photos exist
+      if (photos.length === 0) {
+        photos = [
+          {
+            id: 1001,
+            filename: "tokyo_shibuya.jpg",
+            originalName: "Tokyo Shibuya Crossing",
+            url: "/api/photos/demo/tokyo_shibuya.jpg",
+            tripId: 3,
+            albumId: 1,
+            caption: "Carrefour de Shibuya à Tokyo",
+            location: "Shibuya, Tokyo, Japon",
+            latitude: "35.6598",
+            longitude: "139.7006",
+            uploadedAt: "2024-06-10T10:30:00Z",
+            metadata: null
+          },
+          {
+            id: 1002,
+            filename: "kyoto_temple.jpg",
+            originalName: "Kyoto Golden Temple",
+            url: "/api/photos/demo/kyoto_temple.jpg",
+            tripId: 3,
+            albumId: 1,
+            caption: "Temple doré de Kyoto",
+            location: "Kyoto, Japon",
+            latitude: "35.0116",
+            longitude: "135.7681",
+            uploadedAt: "2024-06-11T14:15:00Z",
+            metadata: null
+          },
+          {
+            id: 1003,
+            filename: "osaka_castle.jpg",
+            originalName: "Osaka Castle",
+            url: "/api/photos/demo/osaka_castle.jpg",
+            tripId: 3,
+            albumId: 1,
+            caption: "Château d'Osaka au coucher du soleil",
+            location: "Osaka, Japon",
+            latitude: "34.6873",
+            longitude: "135.5262",
+            uploadedAt: "2024-06-12T18:45:00Z",
+            metadata: null
+          },
+          {
+            id: 1004,
+            filename: "mount_fuji.jpg",
+            originalName: "Mount Fuji View",
+            url: "/api/photos/demo/mount_fuji.jpg",
+            tripId: 3,
+            albumId: 1,
+            caption: "Vue magnifique du Mont Fuji",
+            location: "Mont Fuji, Japon",
+            latitude: "35.3606",
+            longitude: "138.7274",
+            uploadedAt: "2024-06-13T07:20:00Z",
+            metadata: null
+          },
+          {
+            id: 1005,
+            filename: "hiroshima_peace.jpg",
+            originalName: "Hiroshima Peace Memorial",
+            url: "/api/photos/demo/hiroshima_peace.jpg",
+            tripId: 3,
+            albumId: 1,
+            caption: "Mémorial de la paix d'Hiroshima",
+            location: "Hiroshima, Japon",
+            latitude: "34.3955",
+            longitude: "132.4536",
+            uploadedAt: "2024-06-14T11:00:00Z",
+            metadata: null
+          }
+        ];
+      }
       
       // Filter photos with GPS coordinates
       const geotaggedPhotos = photos.filter((photo: any) => 
@@ -2161,7 +2237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = {
         photos: filteredPhotos.map(photo => ({
           id: photo.id,
-          coordinates: [parseFloat(photo.latitude), parseFloat(photo.longitude)],
+          coordinates: [parseFloat(photo.latitude || '0'), parseFloat(photo.longitude || '0')],
           caption: photo.caption,
           location: photo.location,
           originalName: photo.originalName,
