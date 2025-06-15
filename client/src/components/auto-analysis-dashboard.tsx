@@ -79,7 +79,7 @@ export default function AutoAnalysisDashboard({ className = "" }: AutoAnalysisDa
 
       // Process photos in batches to avoid overwhelming the API
       const batchSize = 3;
-      const results = [];
+      const results: Array<{photoId: number, success: boolean, result?: any, error?: string}> = [];
       
       for (let i = 0; i < photoIds.length; i += batchSize) {
         const batch = photoIds.slice(i, i + batchSize);
