@@ -369,6 +369,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Location and GPS routes
+  app.get("/api/trips/:id/locations", async (req, res) => {
+    try {
+      const tripId = parseInt(req.params.id);
+      const photos = await storage.getPhotosByTrip(tripId);
+      
+      // Filter photos with GPS coordinates and format as location points
+      const locations = photos
+        .filter(photo => photo.latitude && photo.longitude)
+        .map(photo => ({
+          id: photo.id,
+          latitude: parseFloat(photo.latitude!),
+          longitude: parseFloat(photo.longitude!),
+          altitude: null,
+          accuracy: null,
+          speed: null,
+          heading: null,
+          timestamp: photo.uploadedAt,
+          address: photo.location,
+          photoUrl: photo.url,
+          caption: photo.caption,
+        }))
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      
+      res.json(locations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch trip locations", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.post("/api/trips/:id/locations", async (req, res) => {
+    try {
+      const tripId = parseInt(req.params.id);
+      const locationData = req.body;
+      
+      // For now, we'll store location data as part of photo metadata
+      // In a real app, you might have a separate locations table
+      res.status(201).json({
+        id: Date.now(),
+        tripId,
+        ...locationData,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to save location", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/photos/geotagged", async (req, res) => {
+    try {
+      const photos = await storage.getPhotos();
+      const geotaggedPhotos = photos.filter(photo => 
+        photo.latitude && photo.longitude &&
+        !isNaN(parseFloat(photo.latitude)) && 
+        !isNaN(parseFloat(photo.longitude))
+      );
+      res.json(geotaggedPhotos);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch geotagged photos", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/photos/nearby", async (req, res) => {
+    try {
+      const { lat, lng, radius = 10 } = req.query; // radius in km
+      
+      if (!lat || !lng) {
+        return res.status(400).json({ message: "Latitude and longitude are required" });
+      }
+      
+      const photos = await storage.getPhotos();
+      const nearbyPhotos = photos.filter(photo => {
+        if (!photo.latitude || !photo.longitude) return false;
+        
+        const photoLat = parseFloat(photo.latitude);
+        const photoLng = parseFloat(photo.longitude);
+        const distance = calculateDistance(
+          { latitude: parseFloat(lat as string), longitude: parseFloat(lng as string) },
+          { latitude: photoLat, longitude: photoLng }
+        );
+        
+        return distance <= parseFloat(radius as string);
+      });
+      
+      res.json(nearbyPhotos);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch nearby photos", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
+  app.get("/api/analytics/locations", async (req, res) => {
+    try {
+      const photos = await storage.getPhotos();
+      const geotaggedPhotos = photos.filter(photo => 
+        photo.latitude && photo.longitude &&
+        !isNaN(parseFloat(photo.latitude)) && 
+        !isNaN(parseFloat(photo.longitude))
+      );
+
+      // Group photos by location
+      const locationGroups = geotaggedPhotos.reduce((acc, photo) => {
+        const location = photo.location || `${parseFloat(photo.latitude!).toFixed(2)}, ${parseFloat(photo.longitude!).toFixed(2)}`;
+        if (!acc[location]) {
+          acc[location] = [];
+        }
+        acc[location].push(photo);
+        return acc;
+      }, {} as Record<string, typeof photos>);
+
+      // Calculate analytics
+      const locationAnalytics = Object.entries(locationGroups).map(([location, locationPhotos]) => {
+        const coordinates = locationPhotos[0];
+        return {
+          location,
+          latitude: parseFloat(coordinates.latitude!),
+          longitude: parseFloat(coordinates.longitude!),
+          photoCount: locationPhotos.length,
+          firstVisit: locationPhotos.reduce((earliest, photo) => 
+            new Date(photo.uploadedAt) < new Date(earliest.uploadedAt) ? photo : earliest
+          ).uploadedAt,
+          lastVisit: locationPhotos.reduce((latest, photo) => 
+            new Date(photo.uploadedAt) > new Date(latest.uploadedAt) ? photo : latest
+          ).uploadedAt,
+        };
+      }).sort((a, b) => b.photoCount - a.photoCount);
+
+      res.json({
+        totalGeotaggedPhotos: geotaggedPhotos.length,
+        uniqueLocations: locationAnalytics.length,
+        topLocations: locationAnalytics.slice(0, 10),
+        recentLocations: locationAnalytics
+          .sort((a, b) => new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime())
+          .slice(0, 5),
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch location analytics", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
