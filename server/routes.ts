@@ -1385,6 +1385,236 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Face Detection routes
+  app.post("/api/faces/detect", async (req, res) => {
+    try {
+      const { photoId, albumId, settings } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { detectFacesInImage, determineGroupDynamics } = await import('./face-analysis.js');
+      
+      let photosToAnalyze = [];
+      
+      if (photoId) {
+        const photo = await storage.getPhoto(photoId);
+        if (photo) photosToAnalyze.push(photo);
+      } else if (albumId) {
+        photosToAnalyze = await storage.getPhotosByAlbum(albumId);
+      } else {
+        photosToAnalyze = await storage.getPhotos();
+      }
+
+      const results = [];
+      
+      for (const photo of photosToAnalyze.slice(0, 5)) { // Limit to 5 photos for demo
+        try {
+          const photoUrl = `${req.protocol}://${req.get('host')}${photo.url}`;
+          const faceAnalysis = await detectFacesInImage(photoUrl);
+          
+          results.push({
+            photoId: photo.id,
+            ...faceAnalysis
+          });
+        } catch (error) {
+          console.error(`Error analyzing photo ${photo.id}:`, error);
+        }
+      }
+
+      // Aggregate results
+      const totalFaces = results.reduce((sum, r) => sum + r.totalFaces, 0);
+      const allFaces = results.flatMap(r => r.faces);
+      const groupDynamics = determineGroupDynamics(allFaces);
+
+      const aggregatedResult = {
+        totalPhotos: photosToAnalyze.length,
+        analyzedPhotos: results.length,
+        faces: allFaces,
+        totalFaces,
+        uniquePeople: groupDynamics.genderDistribution ? Object.values(groupDynamics.genderDistribution).reduce((a, b) => a + b, 0) : 0,
+        groupSize: groupDynamics.groupSize,
+        mood: groupDynamics.mood,
+        setting: 'unknown',
+        confidence: 0.85,
+        results
+      };
+      
+      res.json(aggregatedResult);
+    } catch (error) {
+      console.error("Face detection error:", error);
+      res.status(500).json({ 
+        message: "Failed to detect faces", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/faces/photo/:photoId", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.photoId);
+      
+      // Mock face data for demonstration
+      const mockFaces = [
+        {
+          id: `face_${photoId}_1`,
+          x: 0.2,
+          y: 0.15,
+          width: 0.15,
+          height: 0.2,
+          confidence: 0.92,
+          age: 28,
+          gender: "femme",
+          emotion: "joyeux",
+          ethnicity: "caucasien",
+          landmarks: [
+            { type: "left_eye", x: 0.22, y: 0.2 },
+            { type: "right_eye", x: 0.28, y: 0.2 }
+          ]
+        }
+      ];
+      
+      res.json(mockFaces);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch faces", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/faces", async (req, res) => {
+    try {
+      // Return mock faces data
+      const mockFaces = [
+        {
+          id: "face_demo_1",
+          x: 0.3,
+          y: 0.2,
+          width: 0.2,
+          height: 0.25,
+          confidence: 0.88,
+          personName: "Marie Dubois",
+          age: 32,
+          gender: "femme",
+          emotion: "joyeux"
+        },
+        {
+          id: "face_demo_2",
+          x: 0.1,
+          y: 0.1,
+          width: 0.18,
+          height: 0.22,
+          confidence: 0.91,
+          age: 25,
+          gender: "homme",
+          emotion: "neutre"
+        }
+      ];
+      
+      res.json(mockFaces);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch all faces", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/faces/tag", async (req, res) => {
+    try {
+      const { faceId, personName, isNewPerson, notes } = req.body;
+      
+      // In a real app, you would update the face record with the person information
+      const taggedFace = {
+        id: faceId,
+        personName,
+        isVerified: true,
+        notes,
+        taggedAt: new Date().toISOString()
+      };
+      
+      res.json(taggedFace);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to tag person", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/people", async (req, res) => {
+    try {
+      // Mock people data for demonstration
+      const mockPeople = [
+        {
+          id: "person_1",
+          name: "Marie Dubois",
+          photoCount: 8,
+          firstSeen: "2025-05-15T10:00:00Z",
+          lastSeen: "2025-06-14T15:30:00Z",
+          isFamily: true,
+          isFriend: false,
+          notes: "Sœur de voyage"
+        },
+        {
+          id: "person_2",
+          name: "Thomas Martin",
+          photoCount: 12,
+          firstSeen: "2025-04-20T14:20:00Z",
+          lastSeen: "2025-06-10T09:15:00Z",
+          isFamily: false,
+          isFriend: true,
+          notes: "Ami de longue date"
+        },
+        {
+          id: "person_3",
+          name: "Sophie Chen",
+          photoCount: 5,
+          firstSeen: "2025-06-01T11:45:00Z",
+          lastSeen: "2025-06-12T16:20:00Z",
+          isFamily: false,
+          isFriend: true,
+          notes: "Rencontrée en voyage"
+        }
+      ];
+      
+      res.json(mockPeople);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch people", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/faces/compare", async (req, res) => {
+    try {
+      const { face1, face2 } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { compareFaces } = await import('./face-analysis.js');
+      
+      // This would use actual face comparison logic
+      const comparison = await compareFaces(
+        face1.imageUrl, face1.coordinates,
+        face2.imageUrl, face2.coordinates
+      );
+      
+      res.json(comparison);
+    } catch (error) {
+      console.error("Face comparison error:", error);
+      res.status(500).json({ 
+        message: "Failed to compare faces", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
