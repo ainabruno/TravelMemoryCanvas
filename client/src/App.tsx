@@ -17,6 +17,10 @@ import TravelGroupsPage from "@/pages/travel-groups";
 import MentoringPage from "@/pages/mentoring";
 import GranularSharingPage from "@/pages/granular-sharing";
 import IntelligentAnonymizationPage from "@/pages/intelligent-anonymization";
+import Subscription from "@/pages/subscription";
+import Marketplace from "@/pages/marketplace";
+import Affiliate from "@/pages/affiliate";
+import RevenueAnalytics from "@/pages/revenue-analytics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -36,6 +40,10 @@ function Router() {
       <Route path="/mentoring" component={MentoringPage} />
       <Route path="/sharing" component={GranularSharingPage} />
       <Route path="/anonymization" component={IntelligentAnonymizationPage} />
+      <Route path="/subscription" component={Subscription} />
+      <Route path="/marketplace" component={Marketplace} />
+      <Route path="/affiliate" component={Affiliate} />
+      <Route path="/admin/revenue" component={RevenueAnalytics} />
       <Route component={NotFound} />
     </Switch>
   );
