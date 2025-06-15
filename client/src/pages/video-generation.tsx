@@ -268,6 +268,9 @@ export default function VideoGenerationPage() {
         </Card>
       </div>
 
+      {/* Test Video Display */}
+      <VideoTest />
+      
       {/* Main Video Generator */}
       <VideoGenerator 
         tripId={Array.isArray(trips) && trips.length > 0 ? trips[0]?.id : undefined}
