@@ -3436,6 +3436,310 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mentoring System API Routes
+  
+  // Get available mentors
+  app.get('/api/mentors', async (req, res) => {
+    try {
+      const mentors = [
+        {
+          id: 1,
+          userId: 'mentor_1',
+          name: 'Sophie Martin',
+          avatar: null,
+          isActive: true,
+          expertiseAreas: ['culture', 'gastronomie', 'photographie'],
+          languages: ['français', 'anglais', 'italien'],
+          countries: ['France', 'Italie', 'Grèce', 'Espagne'],
+          yearsExperience: 8,
+          totalTrips: 45,
+          mentorRating: 4.9,
+          totalMentees: 127,
+          bio: 'Passionnée de voyages culturels et gastronomiques. J\'ai exploré l\'Europe pendant 8 ans et je partage mes conseils pour découvrir les trésors cachés de chaque destination.',
+          hourlyRate: 35,
+          responseTime: 2,
+          verificationStatus: 'verified',
+          badges: ['cultural-expert', 'food-lover', 'photography-pro'],
+          isOnline: true
+        },
+        {
+          id: 2,
+          userId: 'mentor_2',
+          name: 'Alexandre Dubois',
+          avatar: null,
+          isActive: true,
+          expertiseAreas: ['aventure', 'nature', 'randonnée'],
+          languages: ['français', 'anglais', 'espagnol'],
+          countries: ['Pérou', 'Bolivie', 'Nepal', 'Patagonie', 'Alpes'],
+          yearsExperience: 12,
+          totalTrips: 78,
+          mentorRating: 4.8,
+          totalMentees: 89,
+          bio: 'Guide de montagne et aventurier passionné. Spécialisé dans les treks en haute altitude et les expéditions en milieux extrêmes.',
+          hourlyRate: 45,
+          responseTime: 1,
+          verificationStatus: 'premium',
+          badges: ['mountain-expert', 'survival-pro', 'guide-certified'],
+          isOnline: false
+        },
+        {
+          id: 3,
+          userId: 'mentor_3',
+          name: 'Camille Chen',
+          avatar: null,
+          isActive: true,
+          expertiseAreas: ['budget', 'solo', 'backpacking'],
+          languages: ['français', 'anglais', 'mandarin'],
+          countries: ['Asie du Sud-Est', 'Chine', 'Japon', 'Corée du Sud'],
+          yearsExperience: 6,
+          totalTrips: 52,
+          mentorRating: 4.7,
+          totalMentees: 203,
+          bio: 'Experte en voyage petit budget et solo travel. J\'ai parcouru l\'Asie avec moins de 20€ par jour et je partage tous mes secrets.',
+          hourlyRate: null, // Mentorat gratuit
+          responseTime: 3,
+          verificationStatus: 'verified',
+          badges: ['budget-master', 'solo-expert', 'asia-specialist'],
+          isOnline: true
+        },
+        {
+          id: 4,
+          userId: 'mentor_4',
+          name: 'Pierre Leclerc',
+          avatar: null,
+          isActive: true,
+          expertiseAreas: ['famille', 'luxe', 'organisation'],
+          languages: ['français', 'anglais'],
+          countries: ['France', 'Suisse', 'Monaco', 'Maldives', 'Dubaï'],
+          yearsExperience: 10,
+          totalTrips: 67,
+          mentorRating: 4.9,
+          totalMentees: 56,
+          bio: 'Spécialisé dans l\'organisation de voyages de luxe en famille. Expert en destinations haut de gamme et expériences exclusives.',
+          hourlyRate: 80,
+          responseTime: 4,
+          verificationStatus: 'premium',
+          badges: ['luxury-expert', 'family-specialist', 'concierge-pro'],
+          isOnline: true
+        }
+      ];
+      
+      res.json(mentors);
+    } catch (error) {
+      console.error('Error fetching mentors:', error);
+      res.status(500).json({ message: 'Failed to fetch mentors' });
+    }
+  });
+
+  // Get user's mentorship requests
+  app.get('/api/mentorship/requests', async (req, res) => {
+    try {
+      const requests = [
+        {
+          id: 1,
+          menteeId: 'user_demo',
+          mentorId: 'mentor_1',
+          mentorName: 'Sophie Martin',
+          mentorAvatar: null,
+          status: 'accepted',
+          requestType: 'planning',
+          topic: 'Voyage gastronomique en Italie',
+          description: 'Je prépare un voyage de 2 semaines en Italie avec focus sur la gastronomie locale. J\'aimerais des conseils sur les meilleures régions et restaurants authentiques.',
+          urgency: 'normal',
+          preferredContactMethod: 'video',
+          budget: 70,
+          sessionDate: '2024-06-20T14:00:00Z',
+          duration: 90,
+          location: 'Italie',
+          experience: 'intermediate',
+          createdAt: '2024-06-15T10:30:00Z',
+          updatedAt: '2024-06-15T12:15:00Z'
+        },
+        {
+          id: 2,
+          menteeId: 'user_demo',
+          mentorId: 'mentor_3',
+          mentorName: 'Camille Chen',
+          mentorAvatar: null,
+          status: 'pending',
+          requestType: 'advice',
+          topic: 'Premier voyage solo en Asie',
+          description: 'C\'est mon premier voyage solo et j\'aimerais des conseils de sécurité et d\'organisation pour un voyage de 3 semaines en Thaïlande et Vietnam.',
+          urgency: 'normal',
+          preferredContactMethod: 'chat',
+          budget: null,
+          sessionDate: null,
+          duration: 60,
+          location: 'Thaïlande, Vietnam',
+          experience: 'beginner',
+          createdAt: '2024-06-16T09:20:00Z',
+          updatedAt: '2024-06-16T09:20:00Z'
+        }
+      ];
+      
+      res.json(requests);
+    } catch (error) {
+      console.error('Error fetching mentorship requests:', error);
+      res.status(500).json({ message: 'Failed to fetch mentorship requests' });
+    }
+  });
+
+  // Get user's mentorship sessions
+  app.get('/api/mentorship/sessions', async (req, res) => {
+    try {
+      const sessions = [
+        {
+          id: 1,
+          requestId: 1,
+          mentorId: 'mentor_1',
+          menteeId: 'user_demo',
+          mentorName: 'Sophie Martin',
+          menteeName: 'Utilisateur',
+          sessionType: 'video',
+          status: 'completed',
+          startTime: '2024-06-20T14:00:00Z',
+          endTime: '2024-06-20T15:30:00Z',
+          actualDuration: 90,
+          notes: 'Session très productive. Nous avons établi un itinéraire détaillé pour l\'Italie avec focus sur les spécialités régionales. Recommandations de restaurants authentiques partagées.',
+          rating: 5,
+          createdAt: '2024-06-20T14:00:00Z'
+        },
+        {
+          id: 2,
+          requestId: 3,
+          mentorId: 'mentor_2',
+          menteeId: 'user_demo',
+          mentorName: 'Alexandre Dubois',
+          menteeName: 'Utilisateur',
+          sessionType: 'chat',
+          status: 'scheduled',
+          startTime: '2024-06-25T10:00:00Z',
+          endTime: null,
+          actualDuration: null,
+          notes: null,
+          rating: null,
+          createdAt: '2024-06-22T16:30:00Z'
+        }
+      ];
+      
+      res.json(sessions);
+    } catch (error) {
+      console.error('Error fetching mentorship sessions:', error);
+      res.status(500).json({ message: 'Failed to fetch mentorship sessions' });
+    }
+  });
+
+  // Get mentorship programs
+  app.get('/api/mentorship/programs', async (req, res) => {
+    try {
+      const programs = [
+        {
+          id: 1,
+          mentorId: 'mentor_3',
+          mentorName: 'Camille Chen',
+          mentorAvatar: null,
+          title: 'Maîtriser le voyage solo en Asie',
+          description: 'Programme complet de 8 semaines pour apprendre à voyager seul(e) en Asie en toute sécurité et avec un budget optimisé.',
+          programType: 'beginner',
+          duration: 8,
+          maxParticipants: 12,
+          currentParticipants: 8,
+          price: 149,
+          rating: 4.8,
+          totalGraduates: 47,
+          startDate: '2024-07-01T00:00:00Z',
+          isActive: true
+        },
+        {
+          id: 2,
+          mentorId: 'mentor_2',
+          mentorName: 'Alexandre Dubois',
+          mentorAvatar: null,
+          title: 'Trekking en haute altitude',
+          description: 'Formation avancée pour les trekkeurs souhaitant s\'attaquer aux sommets de plus de 4000m. Préparation physique, équipement, sécurité.',
+          programType: 'specialized',
+          duration: 12,
+          maxParticipants: 8,
+          currentParticipants: 5,
+          price: 299,
+          rating: 4.9,
+          totalGraduates: 23,
+          startDate: '2024-08-15T00:00:00Z',
+          isActive: true
+        },
+        {
+          id: 3,
+          mentorId: 'mentor_4',
+          mentorName: 'Pierre Leclerc',
+          mentorAvatar: null,
+          title: 'Voyages de luxe en famille',
+          description: 'Apprenez à organiser des voyages exceptionnels pour toute la famille, de la sélection des hôtels aux activités adaptées.',
+          programType: 'intermediate',
+          duration: 6,
+          maxParticipants: 10,
+          currentParticipants: 3,
+          price: 399,
+          rating: 4.7,
+          totalGraduates: 34,
+          startDate: '2024-09-01T00:00:00Z',
+          isActive: true
+        }
+      ];
+      
+      res.json(programs);
+    } catch (error) {
+      console.error('Error fetching mentorship programs:', error);
+      res.status(500).json({ message: 'Failed to fetch mentorship programs' });
+    }
+  });
+
+  // Create mentorship request
+  app.post('/api/mentorship/requests', async (req, res) => {
+    try {
+      const requestData = req.body;
+      
+      const newRequest = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        menteeId: 'user_demo',
+        ...requestData,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(newRequest);
+    } catch (error) {
+      console.error('Error creating mentorship request:', error);
+      res.status(500).json({ message: 'Failed to create mentorship request' });
+    }
+  });
+
+  // Apply to become mentor
+  app.post('/api/mentors/apply', async (req, res) => {
+    try {
+      const profileData = req.body;
+      
+      const newMentorApplication = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        userId: 'user_demo',
+        ...profileData,
+        isActive: false, // Pending review
+        mentorRating: 0,
+        totalMentees: 0,
+        responseTime: 24,
+        verificationStatus: 'pending',
+        badges: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(newMentorApplication);
+    } catch (error) {
+      console.error('Error creating mentor application:', error);
+      res.status(500).json({ message: 'Failed to create mentor application' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

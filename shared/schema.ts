@@ -473,12 +473,254 @@ export type GroupExpense = typeof groupExpenses.$inferSelect;
 export type GroupTask = typeof groupTasks.$inferSelect;
 export type GroupInvitation = typeof groupInvitations.$inferSelect;
 
+// Mentoring System
+export const mentorProfiles = pgTable("mentor_profiles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().unique(),
+  isActive: boolean("is_active").default(true),
+  expertiseAreas: text("expertise_areas").array(), // adventure, culture, budget, luxury, family, etc.
+  languages: text("languages").array(), // spoken languages
+  countries: text("countries").array(), // countries visited/expert in
+  yearsExperience: integer("years_experience").notNull(),
+  totalTrips: integer("total_trips").default(0),
+  mentorRating: numeric("mentor_rating").default("0"),
+  totalMentees: integer("total_mentees").default(0),
+  bio: text("bio"),
+  hourlyRate: numeric("hourly_rate"), // optional for paid mentoring
+  availability: jsonb("availability"), // weekly schedule
+  responseTime: integer("response_time"), // average response time in hours
+  verificationStatus: text("verification_status").default("pending"), // pending, verified, premium
+  badges: text("badges").array(), // expert badges
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const mentorshipRequests = pgTable("mentorship_requests", {
+  id: serial("id").primaryKey(),
+  menteeId: varchar("mentee_id").notNull(),
+  mentorId: varchar("mentor_id").notNull(),
+  status: text("status").default("pending"), // pending, accepted, declined, completed, cancelled
+  requestType: text("request_type").notNull(), // advice, planning, emergency, long-term
+  topic: text("topic").notNull(),
+  description: text("description").notNull(),
+  urgency: text("urgency").default("normal"), // low, normal, high, urgent
+  preferredContactMethod: text("preferred_contact_method"), // chat, video, phone
+  budget: numeric("budget"), // for paid sessions
+  sessionDate: timestamp("session_date"),
+  duration: integer("duration"), // session duration in minutes
+  location: text("location"), // destination they need help with
+  travelDates: jsonb("travel_dates"), // planned travel dates
+  experience: text("experience"), // beginner, intermediate, advanced
+  specialRequirements: text("special_requirements"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const mentorshipSessions = pgTable("mentorship_sessions", {
+  id: serial("id").primaryKey(),
+  requestId: integer("request_id").references(() => mentorshipRequests.id).notNull(),
+  mentorId: varchar("mentor_id").notNull(),
+  menteeId: varchar("mentee_id").notNull(),
+  sessionType: text("session_type").notNull(), // chat, video, phone, in-person
+  status: text("status").default("scheduled"), // scheduled, in-progress, completed, cancelled, no-show
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  actualDuration: integer("actual_duration"), // actual duration in minutes
+  notes: text("notes"), // mentor's notes
+  menteeNotes: text("mentee_notes"), // mentee's feedback
+  recording: text("recording"), // recording URL if applicable
+  materials: text("materials").array(), // shared materials/links
+  followUpRequired: boolean("follow_up_required").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const mentorshipReviews = pgTable("mentorship_reviews", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").references(() => mentorshipSessions.id).notNull(),
+  reviewerId: varchar("reviewer_id").notNull(), // can be mentor or mentee
+  revieweeId: varchar("reviewee_id").notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  feedback: text("feedback").notNull(),
+  tags: text("tags").array(), // helpful, knowledgeable, responsive, etc.
+  wouldRecommend: boolean("would_recommend").default(true),
+  isPublic: boolean("is_public").default(true),
+  mentorResponse: text("mentor_response"), // mentor can respond to reviews
+  helpfulVotes: integer("helpful_votes").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const mentorshipMessages = pgTable("mentorship_messages", {
+  id: serial("id").primaryKey(),
+  requestId: integer("request_id").references(() => mentorshipRequests.id).notNull(),
+  senderId: varchar("sender_id").notNull(),
+  content: text("content").notNull(),
+  messageType: text("message_type").default("text"), // text, image, file, location, itinerary
+  attachmentUrl: text("attachment_url"),
+  isRead: boolean("is_read").default(false),
+  isSystemMessage: boolean("is_system_message").default(false),
+  metadata: jsonb("metadata"), // additional message data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const mentorAvailability = pgTable("mentor_availability", {
+  id: serial("id").primaryKey(),
+  mentorId: varchar("mentor_id").notNull(),
+  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
+  startTime: text("start_time").notNull(), // HH:MM format
+  endTime: text("end_time").notNull(), // HH:MM format
+  timezone: text("timezone").notNull(),
+  isActive: boolean("is_active").default(true),
+  maxSessions: integer("max_sessions").default(5), // max sessions per day
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const mentorshipResources = pgTable("mentorship_resources", {
+  id: serial("id").primaryKey(),
+  mentorId: varchar("mentor_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  resourceType: text("resource_type").notNull(), // guide, checklist, template, video, article
+  category: text("category").notNull(), // planning, packing, safety, budget, cultural
+  content: text("content"), // text content
+  fileUrl: text("file_url"), // file attachment
+  isPublic: boolean("is_public").default(false),
+  isPremium: boolean("is_premium").default(false),
+  downloads: integer("downloads").default(0),
+  rating: numeric("rating").default("0"),
+  tags: text("tags").array(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const mentorshipPrograms = pgTable("mentorship_programs", {
+  id: serial("id").primaryKey(),
+  mentorId: varchar("mentor_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  programType: text("program_type").notNull(), // beginner, intermediate, specialized
+  duration: integer("duration").notNull(), // duration in weeks
+  maxParticipants: integer("max_participants").default(10),
+  currentParticipants: integer("current_participants").default(0),
+  price: numeric("price"), // program price
+  curriculum: jsonb("curriculum"), // structured learning plan
+  requirements: text("requirements").array(),
+  benefits: text("benefits").array(),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  isActive: boolean("is_active").default(true),
+  rating: numeric("rating").default("0"),
+  totalGraduates: integer("total_graduates").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const mentorshipAchievements = pgTable("mentorship_achievements", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  achievementType: text("achievement_type").notNull(), // mentor, mentee
+  badgeId: text("badge_id").notNull(), // first-session, helpful-mentor, etc.
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  iconUrl: text("icon_url"),
+  earnedAt: timestamp("earned_at").defaultNow().notNull(),
+  isVisible: boolean("is_visible").default(true),
+});
+
 export const userStatsRelations = relations(userStats, ({ one }) => ({
   user: one(userProfiles, {
     fields: [userStats.userId],
     references: [userProfiles.userId],
   }),
 }));
+
+// Mentoring Relations
+export const mentorProfilesRelations = relations(mentorProfiles, ({ one, many }) => ({
+  user: one(userProfiles, {
+    fields: [mentorProfiles.userId],
+    references: [userProfiles.userId],
+  }),
+  requests: many(mentorshipRequests),
+  sessions: many(mentorshipSessions),
+  resources: many(mentorshipResources),
+  programs: many(mentorshipPrograms),
+  availability: many(mentorAvailability),
+}));
+
+export const mentorshipRequestsRelations = relations(mentorshipRequests, ({ one, many }) => ({
+  mentor: one(mentorProfiles, {
+    fields: [mentorshipRequests.mentorId],
+    references: [mentorProfiles.userId],
+  }),
+  mentee: one(userProfiles, {
+    fields: [mentorshipRequests.menteeId],
+    references: [userProfiles.userId],
+  }),
+  sessions: many(mentorshipSessions),
+  messages: many(mentorshipMessages),
+}));
+
+export const mentorshipSessionsRelations = relations(mentorshipSessions, ({ one, many }) => ({
+  request: one(mentorshipRequests, {
+    fields: [mentorshipSessions.requestId],
+    references: [mentorshipRequests.id],
+  }),
+  mentor: one(userProfiles, {
+    fields: [mentorshipSessions.mentorId],
+    references: [userProfiles.userId],
+  }),
+  mentee: one(userProfiles, {
+    fields: [mentorshipSessions.menteeId],
+    references: [userProfiles.userId],
+  }),
+  reviews: many(mentorshipReviews),
+}));
+
+export const mentorshipReviewsRelations = relations(mentorshipReviews, ({ one }) => ({
+  session: one(mentorshipSessions, {
+    fields: [mentorshipReviews.sessionId],
+    references: [mentorshipSessions.id],
+  }),
+  reviewer: one(userProfiles, {
+    fields: [mentorshipReviews.reviewerId],
+    references: [userProfiles.userId],
+  }),
+  reviewee: one(userProfiles, {
+    fields: [mentorshipReviews.revieweeId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+// Insert and Select Types for Mentoring
+export const insertMentorProfileSchema = createInsertSchema(mentorProfiles);
+export const insertMentorshipRequestSchema = createInsertSchema(mentorshipRequests);
+export const insertMentorshipSessionSchema = createInsertSchema(mentorshipSessions);
+export const insertMentorshipReviewSchema = createInsertSchema(mentorshipReviews);
+export const insertMentorshipMessageSchema = createInsertSchema(mentorshipMessages);
+export const insertMentorAvailabilitySchema = createInsertSchema(mentorAvailability);
+export const insertMentorshipResourceSchema = createInsertSchema(mentorshipResources);
+export const insertMentorshipProgramSchema = createInsertSchema(mentorshipPrograms);
+export const insertMentorshipAchievementSchema = createInsertSchema(mentorshipAchievements);
+
+export type InsertMentorProfile = z.infer<typeof insertMentorProfileSchema>;
+export type InsertMentorshipRequest = z.infer<typeof insertMentorshipRequestSchema>;
+export type InsertMentorshipSession = z.infer<typeof insertMentorshipSessionSchema>;
+export type InsertMentorshipReview = z.infer<typeof insertMentorshipReviewSchema>;
+export type InsertMentorshipMessage = z.infer<typeof insertMentorshipMessageSchema>;
+export type InsertMentorAvailability = z.infer<typeof insertMentorAvailabilitySchema>;
+export type InsertMentorshipResource = z.infer<typeof insertMentorshipResourceSchema>;
+export type InsertMentorshipProgram = z.infer<typeof insertMentorshipProgramSchema>;
+export type InsertMentorshipAchievement = z.infer<typeof insertMentorshipAchievementSchema>;
+
+export type MentorProfile = typeof mentorProfiles.$inferSelect;
+export type MentorshipRequest = typeof mentorshipRequests.$inferSelect;
+export type MentorshipSession = typeof mentorshipSessions.$inferSelect;
+export type MentorshipReview = typeof mentorshipReviews.$inferSelect;
+export type MentorshipMessage = typeof mentorshipMessages.$inferSelect;
+export type MentorAvailability = typeof mentorAvailability.$inferSelect;
+export type MentorshipResource = typeof mentorshipResources.$inferSelect;
+export type MentorshipProgram = typeof mentorshipPrograms.$inferSelect;
+export type MentorshipAchievement = typeof mentorshipAchievements.$inferSelect;
 
 export const insertTripSchema = createInsertSchema(trips).omit({
   id: true,
