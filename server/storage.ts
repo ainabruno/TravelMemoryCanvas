@@ -297,8 +297,12 @@ export class DatabaseStorage implements IStorage {
   // Collaboration sessions
   async getActiveCollaborators(albumId: number): Promise<CollaborationSession[]> {
     return await db.select().from(collaborationSessions)
-      .where(eq(collaborationSessions.albumId, albumId))
-      .where(eq(collaborationSessions.isActive, true));
+      .where(
+        and(
+          eq(collaborationSessions.albumId, albumId),
+          eq(collaborationSessions.isActive, true)
+        )
+      );
   }
 
   async createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession> {

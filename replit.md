@@ -2,7 +2,7 @@
 
 ## Overview
 
-Wanderlust is a full-stack travel photo management application that allows users to organize their travel memories through trips, albums, and photos. The application provides features for photo upload, editing, sharing, and organization with a modern, mobile-responsive interface.
+Wanderlust is a full-stack travel photo management application that allows users to organize their travel memories through trips, albums, and photos. The application provides comprehensive collaborative features including shared albums, real-time comments and reactions, activity feeds, and permission-based contributor management. Features include photo upload, editing, sharing, GPS mapping, and organization with a modern, mobile-responsive interface.
 
 ## System Architecture
 
@@ -114,6 +114,8 @@ The application uses three main entities:
 - June 15, 2025: Improved photo upload for multiple file selection (up to 20 files)
 - June 15, 2025: Optimized upload performance with progress bar and reduced file size limits
 - June 15, 2025: Implemented comprehensive GPS mapping and location tracking features
+- June 15, 2025: Added shared albums functionality with collaborative features
+- June 15, 2025: Implemented advanced collaborative features: comments, reactions, activity feeds, and real-time collaboration sessions
 
 ## User Preferences
 
