@@ -26,11 +26,11 @@ export default function MapView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTrip, setSelectedTrip] = useState<number | null>(null);
 
-  const { data: photos = [], isLoading: photosLoading } = useQuery({
+  const { data: photos = [], isLoading: photosLoading } = useQuery<Photo[]>({
     queryKey: ['/api/photos'],
   });
 
-  const { data: trips = [], isLoading: tripsLoading } = useQuery({
+  const { data: trips = [], isLoading: tripsLoading } = useQuery<any[]>({
     queryKey: ['/api/trips'],
   });
 
