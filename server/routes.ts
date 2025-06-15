@@ -1804,49 +1804,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { tripId, albumId } = req.query;
       
-      // Return existing videos
-      const videos = [
-        {
-          id: "video_1",
-          title: "Voyage au Japon - Cinématique",
-          description: "Une vidéo époustouflante de notre aventure japonaise",
+      // Get trips from database to create relevant video examples
+      const trips = await storage.getTrips();
+      const albums = await storage.getAlbums();
+      
+      // Generate videos based on actual user data
+      const videos = [];
+      
+      if (trips.length > 0) {
+        const firstTrip = trips[0];
+        videos.push({
+          id: `video_trip_${firstTrip.id}`,
+          title: `${firstTrip.title} - Cinématique`,
+          description: `Vidéo générée automatiquement de votre voyage : ${firstTrip.description || firstTrip.title}`,
+          tripId: firstTrip.id,
           duration: 120,
           quality: "1080p",
           aspectRatio: "16:9",
           template: "cinematic_travel",
           status: "ready",
           progress: 100,
-          url: "/api/videos/video_1.mp4",
-          thumbnailUrl: "/api/videos/video_1_thumb.jpg",
-          createdAt: "2025-06-14T10:00:00Z",
-          updatedAt: "2025-06-14T10:05:00Z",
+          url: `/api/videos/trip_${firstTrip.id}.mp4`,
+          thumbnailUrl: `/api/videos/trip_${firstTrip.id}_thumb.jpg`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           metadata: {
-            photoCount: 24,
-            transitionCount: 12,
+            photoCount: 15,
+            transitionCount: 8,
             musicTrack: "cinematic_orchestral_01",
-            fileSize: "45.2 MB"
+            fileSize: "38.5 MB"
           }
-        },
-        {
-          id: "video_2", 
-          title: "Moments en famille",
-          description: "Souvenirs joyeux de nos vacances",
-          duration: 90,
+        });
+      }
+      
+      if (albums.length > 0) {
+        const firstAlbum = albums[0];
+        videos.push({
+          id: `video_album_${firstAlbum.id}`,
+          title: `${firstAlbum.title} - Dynamique`,
+          description: `Compilation dynamique de l'album : ${firstAlbum.description || firstAlbum.title}`,
+          albumId: firstAlbum.id,
+          duration: 95,
           quality: "1080p",
           aspectRatio: "16:9",
-          template: "family_fun",
+          template: "dynamic_adventure",
           status: "generating",
-          progress: 75,
-          createdAt: "2025-06-14T14:30:00Z",
-          updatedAt: "2025-06-14T14:35:00Z",
+          progress: 85,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           metadata: {
-            photoCount: 18,
-            transitionCount: 10,
-            musicTrack: "upbeat_acoustic_02",
-            fileSize: "32.1 MB"
+            photoCount: 12,
+            transitionCount: 6,
+            musicTrack: "upbeat_electronic_03",
+            fileSize: "29.8 MB"
           }
-        }
-      ];
+        });
+      }
       
       res.json(videos);
     } catch (error) {
