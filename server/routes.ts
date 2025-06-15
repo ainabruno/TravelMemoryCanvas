@@ -2448,6 +2448,314 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Social Media Import API Routes
+  
+  // Get connected social accounts
+  app.get('/api/social/accounts', async (req, res) => {
+    try {
+      // Demo accounts for development
+      const demoAccounts = [
+        {
+          id: 'instagram_demo',
+          platform: 'instagram',
+          username: 'travel_explorer',
+          displayName: 'Travel Explorer',
+          profilePicture: 'https://via.placeholder.com/100x100/E1306C/FFFFFF?text=IG',
+          isConnected: true,
+          lastSync: '2024-06-15T08:00:00Z',
+          photoCount: 247,
+          permissions: ['read_posts', 'read_profile']
+        },
+        {
+          id: 'facebook_demo',
+          platform: 'facebook',
+          username: 'user.travel',
+          displayName: 'Utilisateur Voyage',
+          profilePicture: 'https://via.placeholder.com/100x100/1877F2/FFFFFF?text=FB',
+          isConnected: false,
+          lastSync: null,
+          photoCount: 0,
+          permissions: []
+        }
+      ];
+
+      res.json(demoAccounts);
+    } catch (error) {
+      console.error('Error fetching social accounts:', error);
+      res.status(500).json({ message: 'Failed to fetch social accounts' });
+    }
+  });
+
+  // Connect social account (OAuth initiation)
+  app.post('/api/social/connect/:platform', async (req, res) => {
+    try {
+      const { platform } = req.params;
+      
+      if (!['instagram', 'facebook'].includes(platform)) {
+        return res.status(400).json({ message: 'Invalid platform' });
+      }
+
+      // In a real implementation, this would redirect to OAuth providers
+      // For demo purposes, we'll simulate a successful connection
+      const authUrl = platform === 'instagram' 
+        ? 'https://api.instagram.com/oauth/authorize?client_id=demo&redirect_uri=demo&scope=user_profile,user_media&response_type=code'
+        : 'https://www.facebook.com/v18.0/dialog/oauth?client_id=demo&redirect_uri=demo&scope=user_photos&response_type=code';
+
+      res.json({ 
+        authUrl,
+        message: 'OAuth flow initiated',
+        platform 
+      });
+    } catch (error) {
+      console.error('Error initiating OAuth:', error);
+      res.status(500).json({ message: 'Failed to initiate OAuth' });
+    }
+  });
+
+  // Disconnect social account
+  app.delete('/api/social/disconnect/:accountId', async (req, res) => {
+    try {
+      const { accountId } = req.params;
+      
+      // In a real implementation, this would revoke OAuth tokens
+      res.json({ 
+        message: 'Account disconnected successfully',
+        accountId 
+      });
+    } catch (error) {
+      console.error('Error disconnecting account:', error);
+      res.status(500).json({ message: 'Failed to disconnect account' });
+    }
+  });
+
+  // Sync photos from social platform
+  app.post('/api/social/sync/:accountId', async (req, res) => {
+    try {
+      const { accountId } = req.params;
+      
+      // Simulate sync process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      res.json({ 
+        message: 'Photos synced successfully',
+        accountId,
+        newPhotos: Math.floor(Math.random() * 10) + 1
+      });
+    } catch (error) {
+      console.error('Error syncing photos:', error);
+      res.status(500).json({ message: 'Failed to sync photos' });
+    }
+  });
+
+  // Get available photos from social platforms
+  app.get('/api/social/photos', async (req, res) => {
+    try {
+      const { platform, startDate, endDate } = req.query;
+      
+      // Demo photos from different platforms
+      const demoPhotos = [
+        {
+          id: 'ig_001',
+          platform: 'instagram',
+          originalId: 'instagram_123456789',
+          url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300',
+          caption: 'Coucher de soleil magique sur les montagnes 🌅 #voyage #nature #montagne',
+          createdTime: '2024-06-10T18:30:00Z',
+          location: {
+            name: 'Alpes françaises',
+            latitude: 45.8326,
+            longitude: 6.8652
+          },
+          tags: ['voyage', 'nature', 'montagne'],
+          likes: 142,
+          comments: 23,
+          isImported: false
+        },
+        {
+          id: 'ig_002',
+          platform: 'instagram',
+          originalId: 'instagram_987654321',
+          url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+          caption: 'Plage paradisiaque aux Maldives 🏝️ #maldives #plage #vacances',
+          createdTime: '2024-06-08T14:15:00Z',
+          location: {
+            name: 'Malé, Maldives',
+            latitude: 4.1755,
+            longitude: 73.5093
+          },
+          tags: ['maldives', 'plage', 'vacances'],
+          likes: 298,
+          comments: 67,
+          isImported: true,
+          importedAt: '2024-06-12T10:00:00Z',
+          tripId: 2,
+          albumId: 1
+        },
+        {
+          id: 'ig_003',
+          platform: 'instagram',
+          originalId: 'instagram_555666777',
+          url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=300',
+          caption: 'Architecture moderne à Tokyo 🏙️ #tokyo #japon #architecture',
+          createdTime: '2024-06-13T09:45:00Z',
+          location: {
+            name: 'Tokyo, Japon',
+            latitude: 35.6762,
+            longitude: 139.6503
+          },
+          tags: ['tokyo', 'japon', 'architecture'],
+          likes: 189,
+          comments: 34,
+          isImported: false
+        },
+        {
+          id: 'fb_001',
+          platform: 'facebook',
+          originalId: 'facebook_111222333',
+          url: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=300',
+          caption: 'Soirée entre amis à Paris ❤️',
+          createdTime: '2024-06-11T20:30:00Z',
+          location: {
+            name: 'Paris, France',
+            latitude: 48.8566,
+            longitude: 2.3522
+          },
+          tags: ['paris', 'amis', 'soirée'],
+          likes: 76,
+          comments: 12,
+          isImported: false
+        },
+        {
+          id: 'fb_002',
+          platform: 'facebook',
+          originalId: 'facebook_444555666',
+          url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=500',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300',
+          caption: 'Randonnée en forêt ce week-end 🌲',
+          createdTime: '2024-06-09T11:20:00Z',
+          location: {
+            name: 'Forêt de Fontainebleau',
+            latitude: 48.4042,
+            longitude: 2.7004
+          },
+          tags: ['randonnée', 'forêt', 'nature'],
+          likes: 54,
+          comments: 8,
+          isImported: false
+        }
+      ];
+
+      // Filter by platform if specified
+      let filteredPhotos = demoPhotos;
+      if (platform && platform !== 'all') {
+        filteredPhotos = demoPhotos.filter(photo => photo.platform === platform);
+      }
+
+      // Filter by date range if specified
+      if (startDate || endDate) {
+        filteredPhotos = filteredPhotos.filter(photo => {
+          const photoDate = new Date(photo.createdTime);
+          if (startDate && photoDate < new Date(startDate as string)) return false;
+          if (endDate && photoDate > new Date(endDate as string)) return false;
+          return true;
+        });
+      }
+
+      res.json(filteredPhotos);
+    } catch (error) {
+      console.error('Error fetching social photos:', error);
+      res.status(500).json({ message: 'Failed to fetch social photos' });
+    }
+  });
+
+  // Import selected photos
+  app.post('/api/social/import', async (req, res) => {
+    try {
+      const { photoIds, settings } = req.body;
+      
+      if (!photoIds || !Array.isArray(photoIds)) {
+        return res.status(400).json({ message: 'Invalid photo IDs' });
+      }
+
+      // Simulate import process
+      let imported = 0;
+      const errors = [];
+
+      for (const photoId of photoIds) {
+        try {
+          // Simulate processing time
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Create a new photo record in the database
+          const newPhoto = await storage.createPhoto({
+            filename: `social_import_${photoId}.jpg`,
+            originalName: `Social Import ${photoId}`,
+            url: `/api/photos/social/${photoId}`,
+            tripId: settings?.autoAssignTrips ? 3 : null, // Assign to Japan trip for demo
+            albumId: settings?.autoAssignTrips ? 1 : null,
+            caption: settings?.includeCaptions ? `Photo importée depuis les réseaux sociaux` : null,
+            location: settings?.includeLocation ? 'Lieu importé' : null,
+            latitude: settings?.includeLocation ? '35.6762' : null,
+            longitude: settings?.includeLocation ? '139.6503' : null,
+            metadata: JSON.stringify({
+              source: 'social_import',
+              originalId: photoId,
+              importSettings: settings
+            })
+          });
+          
+          imported++;
+        } catch (error) {
+          console.error(`Error importing photo ${photoId}:`, error);
+          errors.push({ photoId, error: error instanceof Error ? error.message : 'Unknown error' });
+        }
+      }
+
+      res.json({
+        imported,
+        total: photoIds.length,
+        errors,
+        message: `${imported} photos imported successfully`
+      });
+    } catch (error) {
+      console.error('Error importing photos:', error);
+      res.status(500).json({ message: 'Failed to import photos' });
+    }
+  });
+
+  // OAuth callback handler (for development)
+  app.get('/api/social/callback/:platform', async (req, res) => {
+    try {
+      const { platform } = req.params;
+      const { code, state } = req.query;
+      
+      // In a real implementation, this would exchange the code for access tokens
+      
+      res.send(`
+        <html>
+          <head><title>Connexion réussie</title></head>
+          <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+            <h1>✅ Connexion réussie !</h1>
+            <p>Votre compte ${platform} a été connecté avec succès.</p>
+            <p>Vous pouvez fermer cette fenêtre et retourner à l'application.</p>
+            <script>
+              setTimeout(() => {
+                window.close();
+              }, 3000);
+            </script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Error handling OAuth callback:', error);
+      res.status(500).send('Erreur lors de la connexion');
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
