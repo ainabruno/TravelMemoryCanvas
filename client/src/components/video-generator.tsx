@@ -225,8 +225,9 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
   // Fetch existing videos
   const { data: existingVideos = [], isLoading: videosLoading, error: videosError } = useQuery({
     queryKey: ['/api/videos'],
-    queryFn: () => {
-      return apiRequest('GET', '/api/videos').then(res => res.json());
+    queryFn: async () => {
+      const response = await fetch('/api/videos');
+      return response.json();
     }
   });
 
