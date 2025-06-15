@@ -1,42 +1,68 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Video, Play, Download, Share, Clock } from 'lucide-react';
 
 export default function VideoTest() {
   const { data: videos, isLoading, error } = useQuery({
-    queryKey: ['/api/videos'],
-    queryFn: async () => {
-      const response = await fetch('/api/videos');
-      return response.json();
-    }
+    queryKey: ['/api/videos']
   });
 
-  console.log('VideoTest - Data:', videos, 'Loading:', isLoading, 'Error:', error);
+  console.log('VideoTest:', { loading: isLoading, error, videos, type: typeof videos, isArray: Array.isArray(videos) });
+
+  if (isLoading) {
+    return <div className="p-4 border">Chargement des vidéos...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 border text-red-500">Erreur: {error.message}</div>;
+  }
+
+  if (!videos || !Array.isArray(videos)) {
+    return <div className="p-4 border text-yellow-500">Pas de données vidéo ou format incorrect</div>;
+  }
 
   return (
-    <div className="p-4 border-4 border-red-500 bg-yellow-100">
-      <h2 className="text-xl font-bold text-black mb-4">TEST VIDÉOS SIMPLE</h2>
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-bold">Test Vidéos ({videos.length})</h2>
       
-      <div className="mb-4 text-black">
-        <p>Loading: {isLoading ? 'true' : 'false'}</p>
-        <p>Error: {error ? 'Oui' : 'Non'}</p>
-        <p>Data: {videos ? `${videos.length} vidéos` : 'null'}</p>
-      </div>
-
-      <div className="space-y-2">
-        {videos?.map((video: any, index: number) => (
-          <div key={video.id} className="p-3 bg-blue-200 border-2 border-blue-500 rounded">
-            <div className="text-black font-bold">{index + 1}. {video.title}</div>
-            <div className="text-black text-sm">{video.description}</div>
-            <div className="text-black text-xs">Status: {video.status} | Durée: {video.duration}s</div>
+      {videos.map((video: any, index: number) => (
+        <div key={video.id || index} className="border-2 border-blue-500 p-4 rounded-lg bg-white">
+          <div className="aspect-video bg-gray-200 rounded mb-3 flex items-center justify-center">
+            <Video className="w-12 h-12 text-gray-400" />
           </div>
-        ))}
-      </div>
-
-      {(!videos || videos.length === 0) && !isLoading && (
-        <div className="p-3 bg-red-200 border-2 border-red-500 rounded text-black">
-          Aucune vidéo trouvée
+          
+          <h3 className="text-lg font-bold mb-2">{video.title || 'Titre manquant'}</h3>
+          <p className="text-sm text-gray-600 mb-2">{video.description || 'Description manquante'}</p>
+          
+          <div className="flex items-center gap-2 mb-3 text-sm">
+            <Clock className="w-4 h-4" />
+            <span>{Math.floor((video.duration || 0) / 60)}:{String((video.duration || 0) % 60).padStart(2, '0')}</span>
+            <span className="border px-2 py-1 rounded text-xs">{video.quality || '?'}</span>
+            <span className={`px-2 py-1 rounded text-xs text-white ${
+              video.status === 'ready' ? 'bg-green-500' : 
+              video.status === 'generating' ? 'bg-yellow-500' : 'bg-red-500'
+            }`}>
+              {video.status === 'ready' ? 'Prêt' : 
+               video.status === 'generating' ? 'Génération...' : 'Erreur'}
+            </span>
+          </div>
+          
+          <div className="flex gap-2">
+            <button className="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+              <Play className="w-3 h-3 inline mr-1" />
+              Lire
+            </button>
+            <button className="border px-3 py-1 rounded text-sm">
+              <Download className="w-3 h-3 inline mr-1" />
+              Télécharger
+            </button>
+            <button className="border px-3 py-1 rounded text-sm">
+              <Share className="w-3 h-3 inline mr-1" />
+              Partager
+            </button>
+          </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }
