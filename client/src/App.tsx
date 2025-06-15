@@ -14,6 +14,7 @@ import EnhancedMaps from "@/pages/enhanced-maps";
 import SocialImportPage from "@/pages/social-import";
 import TravelStatisticsPage from "@/pages/travel-statistics";
 import TravelGroupsPage from "@/pages/travel-groups";
+import MentoringPage from "@/pages/mentoring";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/social-import" component={SocialImportPage} />
       <Route path="/statistics" component={TravelStatisticsPage} />
       <Route path="/groups" component={TravelGroupsPage} />
+      <Route path="/mentoring" component={MentoringPage} />
       <Route component={NotFound} />
     </Switch>
   );

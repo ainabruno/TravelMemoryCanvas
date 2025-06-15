@@ -1,4 +1,4 @@
-import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video, Map, Download, BarChart3 } from "lucide-react";
+import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace, Video, Map, Download, BarChart3, Users, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/notification-center";
 
