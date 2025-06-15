@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import AIAnalysisPage from "@/pages/ai-analysis";
 import SuggestionsPage from "@/pages/suggestions";
 import StoryGenerationPage from "@/pages/story-generation";
+import FaceDetectionPage from "@/pages/face-detection";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/ai-analysis" component={AIAnalysisPage} />
       <Route path="/suggestions" component={SuggestionsPage} />
       <Route path="/stories" component={StoryGenerationPage} />
+      <Route path="/faces" component={FaceDetectionPage} />
       <Route component={NotFound} />
     </Switch>
   );

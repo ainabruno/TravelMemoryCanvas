@@ -1,4 +1,4 @@
-import { Camera, Plus, User, Brain, Sparkles, BookOpen } from "lucide-react";
+import { Camera, Plus, User, Brain, Sparkles, BookOpen, ScanFace } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/notification-center";
 
@@ -26,6 +26,10 @@ export default function AppHeader() {
               <a href="/stories" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
                 <BookOpen className="w-4 h-4" />
                 Récits
+              </a>
+              <a href="/faces" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <ScanFace className="w-4 h-4" />
+                Visages
               </a>
             </nav>
           </div>
