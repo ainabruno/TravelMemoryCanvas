@@ -15,7 +15,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TripMap from "@/components/trip-map";
-import { Camera, Images, Globe, Share, Map, Users, UserPlus, TrendingUp, Star, Heart, MapPin, Calendar, Sparkles, ArrowRight, Plus } from "lucide-react";
+import { Camera, Images, Globe, Share, Map, Users, UserPlus, TrendingUp, Star, Heart, MapPin, Calendar, Sparkles, ArrowRight, Plus, Crown, ShoppingBag, DollarSign } from "lucide-react";
+import { useLocation } from "wouter";
 import { useState } from "react";
 
 interface Stats {
@@ -61,6 +62,7 @@ interface Photo {
 }
 
 export default function Home() {
+  const [, navigate] = useLocation();
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -317,6 +319,84 @@ export default function Home() {
                 <span className="text-sm text-gray-500 mt-1">Générer du contenu</span>
               </div>
             </button>
+          </div>
+        </div>
+
+        {/* New Monetization Features */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">Fonctionnalités Premium</h2>
+              <p className="text-gray-600">Débloquez tout le potentiel de Wanderlust</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div 
+              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-6 cursor-pointer hover:scale-105 transition-all duration-300"
+              onClick={() => navigate('/subscription')}
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <Crown className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold">Plans Premium</h3>
+                </div>
+                <p className="text-indigo-100 mb-4">
+                  Accédez à toutes les fonctionnalités IA, stockage illimité et collaboration avancée
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span>À partir de 9,99€/mois</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            </div>
+
+            <div 
+              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 cursor-pointer hover:scale-105 transition-all duration-300"
+              onClick={() => navigate('/marketplace')}
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <ShoppingBag className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold">Marketplace</h3>
+                </div>
+                <p className="text-emerald-100 mb-4">
+                  Achetez et vendez des guides, vidéos et livres photo créés par la communauté
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span>Découvrir les créations</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            </div>
+
+            <div 
+              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white p-6 cursor-pointer hover:scale-105 transition-all duration-300"
+              onClick={() => navigate('/affiliate')}
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold">Programme d'Affiliation</h3>
+                </div>
+                <p className="text-amber-100 mb-4">
+                  Gagnez 20% de commission en recommandant Wanderlust à vos amis
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span>Commencer à gagner</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            </div>
           </div>
         </div>
 
