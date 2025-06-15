@@ -24,6 +24,12 @@ export const albums = pgTable("albums", {
   description: text("description"),
   coverPhotoUrl: text("cover_photo_url"),
   tripId: integer("trip_id").references(() => trips.id),
+  // Shared album functionality
+  isShared: boolean("is_shared").default(false),
+  shareCode: text("share_code"), // Unique code for sharing
+  allowUploads: boolean("allow_uploads").default(true), // Allow contributors to add photos
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const photos = pgTable("photos", {
@@ -40,6 +46,20 @@ export const photos = pgTable("photos", {
   longitude: numeric("longitude"),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   metadata: text("metadata"), // JSON string for EXIF data
+  contributorName: text("contributor_name"), // Name of person who added this photo
+});
+
+// Table for managing album contributors and permissions
+export const albumContributors = pgTable("album_contributors", {
+  id: serial("id").primaryKey(),
+  albumId: integer("album_id").references(() => albums.id).notNull(),
+  contributorName: text("contributor_name").notNull(),
+  contributorEmail: text("contributor_email"),
+  role: text("role").notNull().default("contributor"), // "owner", "contributor", "viewer"
+  canUpload: boolean("can_upload").default(true),
+  canEdit: boolean("can_edit").default(false),
+  canDelete: boolean("can_delete").default(false),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
 // Define relations
@@ -54,6 +74,14 @@ export const albumsRelations = relations(albums, ({ one, many }) => ({
     references: [trips.id],
   }),
   photos: many(photos),
+  contributors: many(albumContributors),
+}));
+
+export const albumContributorsRelations = relations(albumContributors, ({ one }) => ({
+  album: one(albums, {
+    fields: [albumContributors.albumId],
+    references: [albums.id],
+  }),
 }));
 
 export const photosRelations = relations(photos, ({ one }) => ({
@@ -88,3 +116,6 @@ export type InsertAlbum = z.infer<typeof insertAlbumSchema>;
 
 export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = z.infer<typeof insertPhotoSchema>;
+
+export type AlbumContributor = typeof albumContributors.$inferSelect;
+export type InsertAlbumContributor = typeof albumContributors.$inferInsert;

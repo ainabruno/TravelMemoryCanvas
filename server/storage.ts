@@ -1,4 +1,4 @@
-import { trips, albums, photos, type Trip, type Album, type Photo, type InsertTrip, type InsertAlbum, type InsertPhoto } from "@shared/schema";
+import { trips, albums, photos, albumContributors, type Trip, type Album, type Photo, type AlbumContributor, type InsertTrip, type InsertAlbum, type InsertPhoto, type InsertAlbumContributor } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -17,6 +17,14 @@ export interface IStorage {
   createAlbum(album: InsertAlbum): Promise<Album>;
   updateAlbum(id: number, album: Partial<InsertAlbum>): Promise<Album | undefined>;
   deleteAlbum(id: number): Promise<boolean>;
+  
+  // Shared album operations
+  getSharedAlbum(shareCode: string): Promise<Album | undefined>;
+  createSharedAlbum(album: InsertAlbum): Promise<Album & { shareCode: string }>;
+  addContributor(albumId: number, contributor: InsertAlbumContributor): Promise<AlbumContributor>;
+  getContributors(albumId: number): Promise<AlbumContributor[]>;
+  removeContributor(albumId: number, contributorId: number): Promise<boolean>;
+  updateContributorPermissions(contributorId: number, permissions: Partial<InsertAlbumContributor>): Promise<AlbumContributor | undefined>;
 
   // Photo operations
   getPhotos(): Promise<Photo[]>;
