@@ -170,6 +170,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           albumId: req.body.albumId ? parseInt(req.body.albumId) : null,
           caption: req.body.caption || null,
           location: req.body.location || null,
+          latitude: req.body.latitude || null,
+          longitude: req.body.longitude || null,
           metadata: req.body.metadata || null,
         };
 
