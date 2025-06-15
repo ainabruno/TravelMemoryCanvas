@@ -5,14 +5,20 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { CloudUpload, Plus, CheckCircle } from "lucide-react";
+import { CloudUpload, Plus, CheckCircle, MapPin, Navigation } from "lucide-react";
+import LocationPicker from "./location-picker";
+import { getCurrentLocation, getAddressFromCoordinates } from "@/lib/gps-utils";
 
 export default function PhotoUploadZone() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedCount, setUploadedCount] = useState(0);
   const [totalFiles, setTotalFiles] = useState(0);
+  const [selectedLocation, setSelectedLocation] = useState<{lat: number; lng: number; address?: string} | null>(null);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -26,6 +32,15 @@ export default function PhotoUploadZone() {
       files.forEach((file) => {
         formData.append('photos', file);
       });
+
+      // Add GPS coordinates if available
+      if (selectedLocation) {
+        formData.append('latitude', selectedLocation.lat.toString());
+        formData.append('longitude', selectedLocation.lng.toString());
+        if (selectedLocation.address) {
+          formData.append('location', selectedLocation.address);
+        }
+      }
 
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
