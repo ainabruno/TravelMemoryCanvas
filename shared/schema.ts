@@ -105,6 +105,67 @@ export const collaborationSessions = pgTable("collaboration_sessions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// User profiles and settings
+export const userProfiles = pgTable("user_profiles", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  username: text("username").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  bio: text("bio"),
+  avatar: text("avatar"),
+  coverPhoto: text("cover_photo"),
+  location: text("location"),
+  website: text("website"),
+  socialLinks: text("social_links"), // JSON string
+  preferences: text("preferences"), // JSON string for user preferences
+  privacy: text("privacy").notNull().default("public"), // public, friends, private
+  isVerified: boolean("is_verified").default(false),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  lastActiveAt: timestamp("last_active_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// User followers/following system
+export const userFollows = pgTable("user_follows", {
+  id: serial("id").primaryKey(),
+  followerId: text("follower_id").notNull().references(() => userProfiles.userId),
+  followingId: text("following_id").notNull().references(() => userProfiles.userId),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueFollow: unique().on(table.followerId, table.followingId),
+}));
+
+// User achievements and badges
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => userProfiles.userId),
+  achievementType: text("achievement_type").notNull(), // photographer, explorer, collaborator, etc.
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  progress: integer("progress").default(0),
+  maxProgress: integer("max_progress").notNull(),
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User photo statistics
+export const userStats = pgTable("user_stats", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => userProfiles.userId).unique(),
+  totalPhotos: integer("total_photos").default(0),
+  totalTrips: integer("total_trips").default(0),
+  totalAlbums: integer("total_albums").default(0),
+  totalCountries: integer("total_countries").default(0),
+  totalLikes: integer("total_likes").default(0),
+  totalComments: integer("total_comments").default(0),
+  totalShares: integer("total_shares").default(0),
+  featuredPhotos: integer("featured_photos").default(0),
+  lastPhotoAt: timestamp("last_photo_at"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Define relations
 export const tripsRelations = relations(trips, ({ many }) => ({
   albums: many(albums),
@@ -168,6 +229,43 @@ export const collaborationSessionsRelations = relations(collaborationSessions, (
   }),
 }));
 
+export const userProfilesRelations = relations(userProfiles, ({ one, many }) => ({
+  stats: one(userStats, {
+    fields: [userProfiles.userId],
+    references: [userStats.userId],
+  }),
+  achievements: many(userAchievements),
+  followers: many(userFollows, { relationName: "following" }),
+  following: many(userFollows, { relationName: "follower" }),
+}));
+
+export const userFollowsRelations = relations(userFollows, ({ one }) => ({
+  follower: one(userProfiles, {
+    fields: [userFollows.followerId],
+    references: [userProfiles.userId],
+    relationName: "follower",
+  }),
+  following: one(userProfiles, {
+    fields: [userFollows.followingId],
+    references: [userProfiles.userId],
+    relationName: "following",
+  }),
+}));
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(userProfiles, {
+    fields: [userAchievements.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+export const userStatsRelations = relations(userStats, ({ one }) => ({
+  user: one(userProfiles, {
+    fields: [userStats.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
 export const insertTripSchema = createInsertSchema(trips).omit({
   id: true,
 });
@@ -204,3 +302,15 @@ export type InsertPhotoReaction = typeof photoReactions.$inferInsert;
 
 export type CollaborationSession = typeof collaborationSessions.$inferSelect;
 export type InsertCollaborationSession = typeof collaborationSessions.$inferInsert;
+
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertUserProfile = typeof userProfiles.$inferInsert;
+
+export type UserFollow = typeof userFollows.$inferSelect;
+export type InsertUserFollow = typeof userFollows.$inferInsert;
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = typeof userAchievements.$inferInsert;
+
+export type UserStats = typeof userStats.$inferSelect;
+export type InsertUserStats = typeof userStats.$inferInsert;
