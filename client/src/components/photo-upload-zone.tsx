@@ -84,6 +84,40 @@ export default function PhotoUploadZone() {
     },
   });
 
+  const handleCurrentLocation = async () => {
+    setIsGettingLocation(true);
+    try {
+      const coordinates = await getCurrentLocation();
+      const address = await getAddressFromCoordinates(coordinates.latitude, coordinates.longitude);
+      setSelectedLocation({
+        lat: coordinates.latitude,
+        lng: coordinates.longitude,
+        address
+      });
+      toast({
+        title: "Location detected",
+        description: address
+      });
+    } catch (error) {
+      toast({
+        title: "Location error",
+        description: "Could not get your current location",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
+
+  const handleLocationSelect = (location: {lat: number; lng: number; address?: string}) => {
+    setSelectedLocation(location);
+    setLocationDialogOpen(false);
+    toast({
+      title: "Location selected",
+      description: location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+    });
+  };
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       uploadMutation.mutate(acceptedFiles);
@@ -102,46 +136,96 @@ export default function PhotoUploadZone() {
   });
 
   return (
-    <Card 
-      {...getRootProps()} 
-      className={`
-        upload-zone border-2 border-dashed p-8 mb-8 text-center cursor-pointer transition-all
-        ${isDragActive ? 'drag-over border-adventure-blue bg-blue-50' : 'border-slate-300 hover:border-adventure-blue hover:bg-blue-50'}
-      `}
-    >
-      <input {...getInputProps()} />
-      <CloudUpload className="text-4xl text-slate-400 mb-4 mx-auto" />
-      <h3 className="text-lg font-semibold text-slate-900 mb-2">Upload Your Travel Photos</h3>
-      <p className="text-slate-600 mb-4">
-        {isDragActive ? 
-          'Drop your photos here...' : 
-          'Drag multiple photos here or click to select up to 20 files'
-        }
-      </p>
-      {uploadMutation.isPending && (
-        <div className="w-full max-w-sm mx-auto mb-4">
-          <div className="flex items-center justify-between text-sm text-adventure-blue mb-2">
-            <span>Uploading {totalFiles} photo(s)...</span>
-            <span>{Math.round(uploadProgress)}%</span>
+    <div className="space-y-4">
+      {/* Location Controls */}
+      <div className="flex flex-wrap gap-2 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleCurrentLocation}
+            disabled={isGettingLocation}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+          >
+            <Navigation className="w-4 h-4" />
+            {isGettingLocation ? "Getting location..." : "Current location"}
+          </Button>
+          
+          <Dialog open={locationDialogOpen} onOpenChange={setLocationDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                Pick location
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Select Photo Location</DialogTitle>
+              </DialogHeader>
+              <LocationPicker onLocationSelect={handleLocationSelect} />
+            </DialogContent>
+          </Dialog>
+        </div>
+        
+        {selectedLocation && (
+          <div className="flex items-center gap-1 text-sm text-gray-600">
+            <MapPin className="w-3 h-3" />
+            <span className="truncate max-w-40">
+              {selectedLocation.address || `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lng.toFixed(4)}`}
+            </span>
+            <Button
+              onClick={() => setSelectedLocation(null)}
+              variant="ghost"
+              size="sm"
+              className="h-auto p-1 text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </Button>
           </div>
-          <Progress value={uploadProgress} className="w-full" />
-        </div>
-      )}
-      
-      {uploadProgress === 100 && !uploadMutation.isPending && (
-        <div className="flex items-center justify-center text-sm text-green-600 mb-2">
-          <CheckCircle className="w-4 h-4 mr-1" />
-          {uploadedCount} photo(s) uploaded successfully!
-        </div>
-      )}
-      <Button 
-        variant="outline" 
-        disabled={uploadMutation.isPending}
-        className="bg-adventure-blue text-white hover:bg-blue-700"
+        )}
+      </div>
+
+      <Card 
+        {...getRootProps()} 
+        className={`
+          upload-zone border-2 border-dashed p-8 mb-8 text-center cursor-pointer transition-all
+          ${isDragActive ? 'drag-over border-adventure-blue bg-blue-50' : 'border-slate-300 hover:border-adventure-blue hover:bg-blue-50'}
+        `}
       >
-        <Plus className="w-4 h-4 mr-2" />
-        {uploadMutation.isPending ? 'Uploading...' : 'Choose Files'}
-      </Button>
-    </Card>
+        <input {...getInputProps()} />
+        <CloudUpload className="text-4xl text-slate-400 mb-4 mx-auto" />
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">Upload Your Travel Photos</h3>
+        <p className="text-slate-600 mb-4">
+          {isDragActive ? 
+            'Drop your photos here...' : 
+            'Drag multiple photos here or click to select up to 20 files'
+          }
+        </p>
+        {uploadMutation.isPending && (
+          <div className="w-full max-w-sm mx-auto mb-4">
+            <div className="flex items-center justify-between text-sm text-adventure-blue mb-2">
+              <span>Uploading {totalFiles} photo(s)...</span>
+              <span>{Math.round(uploadProgress)}%</span>
+            </div>
+            <Progress value={uploadProgress} className="w-full" />
+          </div>
+        )}
+        
+        {uploadProgress === 100 && !uploadMutation.isPending && (
+          <div className="flex items-center justify-center text-sm text-green-600 mb-2">
+            <CheckCircle className="w-4 h-4 mr-1" />
+            {uploadedCount} photo(s) uploaded successfully!
+          </div>
+        )}
+        <Button 
+          variant="outline" 
+          disabled={uploadMutation.isPending}
+          className="bg-adventure-blue text-white hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {uploadMutation.isPending ? 'Uploading...' : 'Choose Files'}
+        </Button>
+      </Card>
+    </div>
   );
 }
