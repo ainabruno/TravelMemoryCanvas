@@ -860,7 +860,7 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                 <p className="text-sm">Utilisez le générateur ci-dessus pour créer votre première vidéo</p>
               </div>
             )}
-          </div>
+            </div>
           )}
         </CardContent>
       </Card>
