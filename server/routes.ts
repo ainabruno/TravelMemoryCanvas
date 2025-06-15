@@ -4405,6 +4405,351 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Monetization Routes - Subscription Management
+  app.get('/api/subscription/plans', async (req, res) => {
+    try {
+      const plans = [
+        {
+          id: 1,
+          name: 'free',
+          displayName: 'Gratuit',
+          description: 'Parfait pour commencer votre aventure',
+          price: 0,
+          yearlyPrice: 0,
+          currency: 'EUR',
+          features: [
+            '5 voyages maximum',
+            '50 photos par mois',
+            'Albums partagés basiques',
+            'Carte interactive',
+            'Support communautaire'
+          ],
+          limits: {
+            trips: 5,
+            photosPerMonth: 50,
+            storageGB: 1,
+            aiRequests: 0,
+            videoGeneration: 0
+          },
+          isRecommended: false
+        },
+        {
+          id: 2,
+          name: 'explorer',
+          displayName: 'Explorateur',
+          description: 'Pour les voyageurs passionnés',
+          price: 9.99,
+          yearlyPrice: 99.90,
+          currency: 'EUR',
+          features: [
+            'Voyages illimités',
+            '500 photos par mois',
+            'Analyse IA des photos',
+            'Génération de vidéos (5/mois)',
+            'Albums collaboratifs avancés',
+            'Anonymisation intelligente',
+            'Support prioritaire'
+          ],
+          limits: {
+            trips: -1,
+            photosPerMonth: 500,
+            storageGB: 10,
+            aiRequests: 100,
+            videoGeneration: 5
+          },
+          isRecommended: true
+        },
+        {
+          id: 3,
+          name: 'professional',
+          displayName: 'Professionnel',
+          description: 'Pour les créateurs de contenu',
+          price: 19.99,
+          yearlyPrice: 199.90,
+          currency: 'EUR',
+          features: [
+            'Tout de l\'Explorateur',
+            'Photos illimitées',
+            'Génération IA illimitée',
+            'Livres photo automatiques',
+            'API marketplace',
+            'Analytics avancées',
+            'Mentoring premium',
+            'Support dédié'
+          ],
+          limits: {
+            trips: -1,
+            photosPerMonth: -1,
+            storageGB: 100,
+            aiRequests: -1,
+            videoGeneration: -1
+          },
+          isRecommended: false
+        },
+        {
+          id: 4,
+          name: 'enterprise',
+          displayName: 'Entreprise',
+          description: 'Pour les équipes et organisations',
+          price: 49.99,
+          yearlyPrice: 499.90,
+          currency: 'EUR',
+          features: [
+            'Tout du Professionnel',
+            'Stockage illimité',
+            'Gestion d\'équipe',
+            'Branding personnalisé',
+            'Intégrations avancées',
+            'SLA garanti',
+            'Support 24/7'
+          ],
+          limits: {
+            trips: -1,
+            photosPerMonth: -1,
+            storageGB: -1,
+            aiRequests: -1,
+            videoGeneration: -1
+          },
+          isRecommended: false
+        }
+      ];
+
+      res.json(plans);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+      res.status(500).json({ message: 'Erreur lors de la récupération des plans' });
+    }
+  });
+
+  app.get('/api/subscription/current', async (req, res) => {
+    try {
+      // Simulation d'un abonnement utilisateur
+      const currentSubscription = {
+        id: 1,
+        planId: 1,
+        planName: 'free',
+        status: 'active',
+        currentPeriodStart: new Date('2025-01-01'),
+        currentPeriodEnd: new Date('2025-02-01'),
+        usage: {
+          storageUsed: 250, // MB
+          photosUploaded: 23,
+          aiRequestsUsed: 0,
+          videoGenerations: 0,
+          sharedAlbums: 2
+        },
+        limits: {
+          trips: 5,
+          photosPerMonth: 50,
+          storageGB: 1,
+          aiRequests: 0,
+          videoGeneration: 0
+        }
+      };
+
+      res.json(currentSubscription);
+    } catch (error) {
+      console.error('Error fetching current subscription:', error);
+      res.status(500).json({ message: 'Erreur lors de la récupération de l\'abonnement' });
+    }
+  });
+
+  app.get('/api/marketplace/featured', async (req, res) => {
+    try {
+      const featuredItems = [
+        {
+          id: 1,
+          title: 'Guide Complet Tokyo 2025',
+          description: 'Guide détaillé avec itinéraires, restaurants et conseils locaux',
+          price: 12.99,
+          currency: 'EUR',
+          category: 'guide',
+          rating: 4.8,
+          totalSales: 234,
+          thumbnailUrl: '/api/placeholder/300/200',
+          seller: {
+            name: 'Marie Dubois',
+            verified: true,
+            rating: 4.9
+          }
+        },
+        {
+          id: 2,
+          title: 'Vidéo de Voyage - Bali Paradise',
+          description: 'Montage professionnel de 10 minutes avec musique originale',
+          price: 8.99,
+          currency: 'EUR',
+          category: 'video',
+          rating: 4.9,
+          totalSales: 156,
+          thumbnailUrl: '/api/placeholder/300/200',
+          seller: {
+            name: 'Alex Travel',
+            verified: true,
+            rating: 4.7
+          }
+        },
+        {
+          id: 3,
+          title: 'Livre Photo - Roadtrip USA',
+          description: 'Format A4, 50 pages, reliure premium',
+          price: 24.99,
+          currency: 'EUR',
+          category: 'photo_book',
+          rating: 4.6,
+          totalSales: 89,
+          thumbnailUrl: '/api/placeholder/300/200',
+          seller: {
+            name: 'Adventure Studio',
+            verified: true,
+            rating: 4.8
+          }
+        }
+      ];
+
+      res.json(featuredItems);
+    } catch (error) {
+      console.error('Error fetching marketplace items:', error);
+      res.status(500).json({ message: 'Erreur lors de la récupération des articles' });
+    }
+  });
+
+  app.get('/api/affiliate/dashboard', async (req, res) => {
+    try {
+      const affiliateData = {
+        affiliateId: 'WL-AFF-123456',
+        status: 'active',
+        commissionRate: 20,
+        totalEarnings: 245.80,
+        pendingEarnings: 89.50,
+        paidEarnings: 156.30,
+        referralCode: 'MARIE2025',
+        totalReferrals: 12,
+        activeReferrals: 8,
+        stats: {
+          thisMonth: {
+            referrals: 3,
+            earnings: 45.60,
+            conversions: 2
+          },
+          lastMonth: {
+            referrals: 5,
+            earnings: 67.80,
+            conversions: 4
+          }
+        },
+        recentReferrals: [
+          {
+            id: 1,
+            referredUser: 'user***@gmail.com',
+            status: 'converted',
+            commission: 19.98,
+            date: new Date('2025-06-10')
+          },
+          {
+            id: 2,
+            referredUser: 'travel***@yahoo.fr',
+            status: 'pending',
+            commission: 0,
+            date: new Date('2025-06-12')
+          }
+        ]
+      };
+
+      res.json(affiliateData);
+    } catch (error) {
+      console.error('Error fetching affiliate dashboard:', error);
+      res.status(500).json({ message: 'Erreur lors de la récupération du tableau de bord' });
+    }
+  });
+
+  app.post('/api/promotion/apply', async (req, res) => {
+    try {
+      const { code, planId } = req.body;
+      
+      // Simulation de codes promo
+      const validCodes = {
+        'WELCOME25': {
+          type: 'percentage',
+          value: 25,
+          maxDiscount: 10,
+          description: '25% de réduction sur votre premier abonnement'
+        },
+        'SUMMER2025': {
+          type: 'fixed_amount',
+          value: 5,
+          description: '5€ de réduction'
+        },
+        'FREETRIAL': {
+          type: 'free_trial',
+          value: 30,
+          description: '30 jours d\'essai gratuit'
+        }
+      };
+
+      const promotion = validCodes[code.toUpperCase()];
+      
+      if (!promotion) {
+        return res.status(400).json({ 
+          message: 'Code promo invalide ou expiré' 
+        });
+      }
+
+      res.json({
+        valid: true,
+        promotion: {
+          code: code.toUpperCase(),
+          ...promotion
+        },
+        message: 'Code promo appliqué avec succès!'
+      });
+    } catch (error) {
+      console.error('Error applying promotion:', error);
+      res.status(500).json({ message: 'Erreur lors de l\'application du code promo' });
+    }
+  });
+
+  app.get('/api/revenue/analytics', async (req, res) => {
+    try {
+      const revenueData = {
+        totalRevenue: 15420.50,
+        monthlyRevenue: 2840.30,
+        subscriptions: {
+          active: 1250,
+          growth: 12.5,
+          churn: 3.2
+        },
+        marketplace: {
+          totalSales: 892,
+          commission: 1890.45,
+          topCategories: [
+            { name: 'Guides', revenue: 890.20, sales: 234 },
+            { name: 'Vidéos', revenue: 654.80, sales: 189 },
+            { name: 'Livres Photo', revenue: 345.45, sales: 67 }
+          ]
+        },
+        affiliate: {
+          totalCommissions: 2340.80,
+          activeAffiliates: 89,
+          conversionRate: 4.2
+        },
+        monthlyData: [
+          { month: 'Jan', revenue: 12800, subscriptions: 1180, marketplace: 420 },
+          { month: 'Fév', revenue: 13600, subscriptions: 1210, marketplace: 480 },
+          { month: 'Mar', revenue: 14200, subscriptions: 1190, marketplace: 520 },
+          { month: 'Avr', revenue: 13800, subscriptions: 1220, marketplace: 450 },
+          { month: 'Mai', revenue: 15100, subscriptions: 1240, marketplace: 580 },
+          { month: 'Jun', revenue: 15420, subscriptions: 1250, marketplace: 620 }
+        ]
+      };
+
+      res.json(revenueData);
+    } catch (error) {
+      console.error('Error fetching revenue analytics:', error);
+      res.status(500).json({ message: 'Erreur lors de la récupération des analytics' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
