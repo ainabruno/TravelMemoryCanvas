@@ -252,12 +252,226 @@ export const userFollowsRelations = relations(userFollows, ({ one }) => ({
   }),
 }));
 
+// Travel Groups System
+export const travelGroups = pgTable("travel_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  coverImageUrl: text("cover_image_url"),
+  ownerId: varchar("owner_id").notNull(),
+  isPrivate: boolean("is_private").default(false),
+  joinCode: text("join_code"), // Unique code for joining private groups
+  maxMembers: integer("max_members").default(20),
+  tags: text("tags").array(), // Travel interests/tags
+  location: text("location"), // Primary destination
+  budget: text("budget"), // Budget range
+  travelStyle: text("travel_style"), // Adventure, Cultural, Relaxation, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const groupMembers = pgTable("group_members", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  userId: varchar("user_id").notNull(),
+  role: text("role").notNull(), // owner, admin, member, viewer
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  nickname: text("nickname"), // Optional nickname in group
+  bio: text("bio"), // Member bio for the group
+  permissions: jsonb("permissions"), // Custom permissions object
+  isActive: boolean("is_active").default(true),
+}, (table) => [
+  unique().on(table.groupId, table.userId)
+]);
+
+export const groupTrips = pgTable("group_trips", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  tripId: integer("trip_id").references(() => trips.id).notNull(),
+  status: text("status").default("planned"), // planned, active, completed, cancelled
+  createdBy: varchar("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  unique().on(table.groupId, table.tripId)
+]);
+
+export const groupMessages = pgTable("group_messages", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  userId: varchar("user_id").notNull(),
+  content: text("content").notNull(),
+  messageType: text("message_type").default("text"), // text, image, file, system
+  attachmentUrl: text("attachment_url"),
+  replyToId: integer("reply_to_id").references(() => groupMessages.id),
+  isEdited: boolean("is_edited").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const groupEvents = pgTable("group_events", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  eventType: text("event_type").notNull(), // meeting, deadline, activity, milestone
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  location: text("location"),
+  isAllDay: boolean("is_all_day").default(false),
+  reminderTime: integer("reminder_time"), // Minutes before event
+  createdBy: varchar("created_by").notNull(),
+  attendees: text("attendees").array(), // User IDs of attendees
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groupPolls = pgTable("group_polls", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  question: text("question").notNull(),
+  options: jsonb("options").notNull(), // Array of poll options
+  votes: jsonb("votes").notNull(), // Voting results
+  allowMultiple: boolean("allow_multiple").default(false),
+  isAnonymous: boolean("is_anonymous").default(false),
+  endDate: timestamp("end_date"),
+  createdBy: varchar("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groupExpenses = pgTable("group_expenses", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  tripId: integer("trip_id").references(() => trips.id),
+  title: text("title").notNull(),
+  amount: numeric("amount").notNull(),
+  currency: text("currency").default("EUR"),
+  category: text("category").notNull(), // accommodation, transport, food, activities, etc.
+  paidBy: varchar("paid_by").notNull(),
+  splitBetween: text("split_between").array(), // User IDs to split between
+  receiptUrl: text("receipt_url"),
+  description: text("description"),
+  date: timestamp("date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groupTasks = pgTable("group_tasks", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  assignedTo: varchar("assigned_to"),
+  status: text("status").default("pending"), // pending, in_progress, completed
+  priority: text("priority").default("medium"), // low, medium, high, urgent
+  dueDate: timestamp("due_date"),
+  category: text("category"), // booking, planning, packing, research, etc.
+  createdBy: varchar("created_by").notNull(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const groupInvitations = pgTable("group_invitations", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => travelGroups.id).notNull(),
+  invitedEmail: text("invited_email"),
+  invitedUserId: varchar("invited_user_id"),
+  invitedBy: varchar("invited_by").notNull(),
+  role: text("role").default("member"),
+  message: text("message"),
+  status: text("status").default("pending"), // pending, accepted, declined, expired
+  token: text("token").notNull(), // Unique invitation token
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
   user: one(userProfiles, {
     fields: [userAchievements.userId],
     references: [userProfiles.userId],
   }),
 }));
+
+// Travel Groups Relations
+export const travelGroupsRelations = relations(travelGroups, ({ one, many }) => ({
+  owner: one(userProfiles, {
+    fields: [travelGroups.ownerId],
+    references: [userProfiles.userId],
+  }),
+  members: many(groupMembers),
+  trips: many(groupTrips),
+  messages: many(groupMessages),
+  events: many(groupEvents),
+  polls: many(groupPolls),
+  expenses: many(groupExpenses),
+  tasks: many(groupTasks),
+  invitations: many(groupInvitations),
+}));
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(travelGroups, {
+    fields: [groupMembers.groupId],
+    references: [travelGroups.id],
+  }),
+  user: one(userProfiles, {
+    fields: [groupMembers.userId],
+    references: [userProfiles.userId],
+  }),
+}));
+
+export const groupTripsRelations = relations(groupTrips, ({ one }) => ({
+  group: one(travelGroups, {
+    fields: [groupTrips.groupId],
+    references: [travelGroups.id],
+  }),
+  trip: one(trips, {
+    fields: [groupTrips.tripId],
+    references: [trips.id],
+  }),
+}));
+
+export const groupMessagesRelations = relations(groupMessages, ({ one }) => ({
+  group: one(travelGroups, {
+    fields: [groupMessages.groupId],
+    references: [travelGroups.id],
+  }),
+  user: one(userProfiles, {
+    fields: [groupMessages.userId],
+    references: [userProfiles.userId],
+  }),
+  replyTo: one(groupMessages, {
+    fields: [groupMessages.replyToId],
+    references: [groupMessages.id],
+  }),
+}));
+
+// Insert and Select Types for Travel Groups
+export const insertTravelGroupSchema = createInsertSchema(travelGroups);
+export const insertGroupMemberSchema = createInsertSchema(groupMembers);
+export const insertGroupTripSchema = createInsertSchema(groupTrips);
+export const insertGroupMessageSchema = createInsertSchema(groupMessages);
+export const insertGroupEventSchema = createInsertSchema(groupEvents);
+export const insertGroupPollSchema = createInsertSchema(groupPolls);
+export const insertGroupExpenseSchema = createInsertSchema(groupExpenses);
+export const insertGroupTaskSchema = createInsertSchema(groupTasks);
+export const insertGroupInvitationSchema = createInsertSchema(groupInvitations);
+
+export type InsertTravelGroup = z.infer<typeof insertTravelGroupSchema>;
+export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
+export type InsertGroupTrip = z.infer<typeof insertGroupTripSchema>;
+export type InsertGroupMessage = z.infer<typeof insertGroupMessageSchema>;
+export type InsertGroupEvent = z.infer<typeof insertGroupEventSchema>;
+export type InsertGroupPoll = z.infer<typeof insertGroupPollSchema>;
+export type InsertGroupExpense = z.infer<typeof insertGroupExpenseSchema>;
+export type InsertGroupTask = z.infer<typeof insertGroupTaskSchema>;
+export type InsertGroupInvitation = z.infer<typeof insertGroupInvitationSchema>;
+
+export type TravelGroup = typeof travelGroups.$inferSelect;
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type GroupTrip = typeof groupTrips.$inferSelect;
+export type GroupMessage = typeof groupMessages.$inferSelect;
+export type GroupEvent = typeof groupEvents.$inferSelect;
+export type GroupPoll = typeof groupPolls.$inferSelect;
+export type GroupExpense = typeof groupExpenses.$inferSelect;
+export type GroupTask = typeof groupTasks.$inferSelect;
+export type GroupInvitation = typeof groupInvitations.$inferSelect;
 
 export const userStatsRelations = relations(userStats, ({ one }) => ({
   user: one(userProfiles, {
