@@ -2450,36 +2450,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Social Media Import API Routes
   
+  // In-memory storage for demo accounts state
+  let socialAccountsState = [
+    {
+      id: 'instagram_demo',
+      platform: 'instagram',
+      username: 'travel_explorer',
+      displayName: 'Travel Explorer',
+      profilePicture: 'https://via.placeholder.com/100x100/E1306C/FFFFFF?text=IG',
+      isConnected: true,
+      lastSync: '2024-06-15T08:00:00Z',
+      photoCount: 247,
+      permissions: ['read_posts', 'read_profile']
+    },
+    {
+      id: 'facebook_demo',
+      platform: 'facebook',
+      username: 'user.travel',
+      displayName: 'Utilisateur Voyage',
+      profilePicture: 'https://via.placeholder.com/100x100/1877F2/FFFFFF?text=FB',
+      isConnected: false,
+      lastSync: null,
+      photoCount: 0,
+      permissions: []
+    }
+  ];
+
   // Get connected social accounts
   app.get('/api/social/accounts', async (req, res) => {
     try {
-      // Demo accounts for development
-      const demoAccounts = [
-        {
-          id: 'instagram_demo',
-          platform: 'instagram',
-          username: 'travel_explorer',
-          displayName: 'Travel Explorer',
-          profilePicture: 'https://via.placeholder.com/100x100/E1306C/FFFFFF?text=IG',
-          isConnected: true,
-          lastSync: '2024-06-15T08:00:00Z',
-          photoCount: 247,
-          permissions: ['read_posts', 'read_profile']
-        },
-        {
-          id: 'facebook_demo',
-          platform: 'facebook',
-          username: 'user.travel',
-          displayName: 'Utilisateur Voyage',
-          profilePicture: 'https://via.placeholder.com/100x100/1877F2/FFFFFF?text=FB',
-          isConnected: false,
-          lastSync: null,
-          photoCount: 0,
-          permissions: []
-        }
-      ];
-
-      res.json(demoAccounts);
+      res.json(socialAccountsState);
     } catch (error) {
       console.error('Error fetching social accounts:', error);
       res.status(500).json({ message: 'Failed to fetch social accounts' });
@@ -2495,17 +2495,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid platform' });
       }
 
-      // In a real implementation, this would redirect to OAuth providers
-      // For demo purposes, we'll simulate a successful connection
-      const authUrl = platform === 'instagram' 
-        ? 'https://api.instagram.com/oauth/authorize?client_id=demo&redirect_uri=demo&scope=user_profile,user_media&response_type=code'
-        : 'https://www.facebook.com/v18.0/dialog/oauth?client_id=demo&redirect_uri=demo&scope=user_photos&response_type=code';
-
-      res.json({ 
-        authUrl,
-        message: 'OAuth flow initiated',
-        platform 
-      });
+      // For demo purposes, simulate successful connection immediately
+      if (platform === 'facebook') {
+        // Update the Facebook account state to connected
+        const facebookAccount = socialAccountsState.find(acc => acc.platform === 'facebook');
+        if (facebookAccount) {
+          facebookAccount.isConnected = true;
+          facebookAccount.lastSync = new Date().toISOString();
+          facebookAccount.photoCount = 156;
+          facebookAccount.permissions = ['user_photos', 'read_posts'];
+        }
+        
+        res.json({ 
+          message: 'Facebook account connected successfully',
+          platform,
+          connected: true,
+          account: facebookAccount
+        });
+      } else {
+        // Instagram OAuth URL for real implementation
+        const authUrl = 'https://api.instagram.com/oauth/authorize?client_id=demo&redirect_uri=demo&scope=user_profile,user_media&response_type=code';
+        
+        res.json({ 
+          authUrl,
+          message: 'OAuth flow initiated',
+          platform 
+        });
+      }
     } catch (error) {
       console.error('Error initiating OAuth:', error);
       res.status(500).json({ message: 'Failed to initiate OAuth' });
@@ -2517,10 +2533,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { accountId } = req.params;
       
-      // In a real implementation, this would revoke OAuth tokens
+      // Find and update the account state
+      const account = socialAccountsState.find(acc => acc.id === accountId);
+      if (account) {
+        account.isConnected = false;
+        account.lastSync = null;
+        account.photoCount = 0;
+        account.permissions = [];
+      }
+      
       res.json({ 
         message: 'Account disconnected successfully',
-        accountId 
+        accountId,
+        account 
       });
     } catch (error) {
       console.error('Error disconnecting account:', error);
