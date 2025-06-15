@@ -16,6 +16,7 @@ import TravelStatisticsPage from "@/pages/travel-statistics";
 import TravelGroupsPage from "@/pages/travel-groups";
 import MentoringPage from "@/pages/mentoring";
 import GranularSharingPage from "@/pages/granular-sharing";
+import IntelligentAnonymizationPage from "@/pages/intelligent-anonymization";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/groups" component={TravelGroupsPage} />
       <Route path="/mentoring" component={MentoringPage} />
       <Route path="/sharing" component={GranularSharingPage} />
+      <Route path="/anonymization" component={IntelligentAnonymizationPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -4296,6 +4296,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Intelligent Anonymization API Routes
+  
+  // Get privacy policies
+  app.get('/api/anonymization/policies', async (req, res) => {
+    try {
+      const { getDefaultPrivacyPolicies } = await import('./anonymization-service');
+      const policies = getDefaultPrivacyPolicies();
+      res.json(policies);
+    } catch (error) {
+      console.error('Error fetching privacy policies:', error);
+      res.status(500).json({ message: 'Failed to fetch privacy policies' });
+    }
+  });
+
+  // Detect persons in image
+  app.post('/api/anonymization/detect', async (req, res) => {
+    try {
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: 'Image URL is required' });
+      }
+
+      const { detectPersonsInImage } = await import('./anonymization-service');
+      const persons = await detectPersonsInImage(imageUrl);
+      
+      res.json({ persons });
+    } catch (error) {
+      console.error('Error detecting persons:', error);
+      res.status(500).json({ message: 'Failed to detect persons in image' });
+    }
+  });
+
+  // Analyze privacy risks
+  app.post('/api/anonymization/analyze-risks', async (req, res) => {
+    try {
+      const { imageUrl, detectedPersons } = req.body;
+      
+      if (!imageUrl || !detectedPersons) {
+        return res.status(400).json({ message: 'Image URL and detected persons are required' });
+      }
+
+      const { analyzePrivacyRisks } = await import('./anonymization-service');
+      const riskAnalysis = await analyzePrivacyRisks(imageUrl, detectedPersons);
+      
+      res.json(riskAnalysis);
+    } catch (error) {
+      console.error('Error analyzing privacy risks:', error);
+      res.status(500).json({ message: 'Failed to analyze privacy risks' });
+    }
+  });
+
+  // Apply anonymization
+  app.post('/api/anonymization/apply', async (req, res) => {
+    try {
+      const { imageUrl, detectedPersons, settings } = req.body;
+      
+      if (!imageUrl || !detectedPersons || !settings) {
+        return res.status(400).json({ message: 'Image URL, detected persons, and settings are required' });
+      }
+
+      const { applyAnonymization } = await import('./anonymization-service');
+      const result = await applyAnonymization(imageUrl, detectedPersons, settings);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error applying anonymization:', error);
+      res.status(500).json({ message: 'Failed to apply anonymization' });
+    }
+  });
+
+  // Suggest optimal settings
+  app.post('/api/anonymization/suggest', async (req, res) => {
+    try {
+      const { imageUrl, detectedPersons, sharingContext } = req.body;
+      
+      if (!imageUrl || !detectedPersons || !sharingContext) {
+        return res.status(400).json({ message: 'Image URL, detected persons, and sharing context are required' });
+      }
+
+      const { suggestOptimalSettings } = await import('./anonymization-service');
+      const settings = await suggestOptimalSettings(imageUrl, detectedPersons, sharingContext);
+      
+      res.json(settings);
+    } catch (error) {
+      console.error('Error suggesting settings:', error);
+      res.status(500).json({ message: 'Failed to suggest optimal settings' });
+    }
+  });
+
+  // Generate privacy report
+  app.post('/api/anonymization/report', async (req, res) => {
+    try {
+      const { imageUrl, anonymizationResult, privacyPolicy } = req.body;
+      
+      if (!imageUrl || !anonymizationResult || !privacyPolicy) {
+        return res.status(400).json({ message: 'Image URL, anonymization result, and privacy policy are required' });
+      }
+
+      const { generatePrivacyReport } = await import('./anonymization-service');
+      const report = await generatePrivacyReport(imageUrl, anonymizationResult, privacyPolicy);
+      
+      res.json(report);
+    } catch (error) {
+      console.error('Error generating privacy report:', error);
+      res.status(500).json({ message: 'Failed to generate privacy report' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
