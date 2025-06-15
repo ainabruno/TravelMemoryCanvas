@@ -1888,6 +1888,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get video photos for playback
+  app.get('/api/videos/:videoId/photos', async (req, res) => {
+    try {
+      const { videoId } = req.params;
+      
+      // Generate demo photos for video playback
+      const demoPhotos = [
+        {
+          id: 1,
+          url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&h=600&fit=crop",
+          caption: "Arrivée à Tokyo - Première impression de la métropole",
+          location: "Tokyo, Japon"
+        },
+        {
+          id: 2,
+          url: "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=800&h=600&fit=crop",
+          caption: "Temple Senso-ji - Architecture traditionnelle",
+          location: "Asakusa, Tokyo"
+        },
+        {
+          id: 3,
+          url: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800&h=600&fit=crop",
+          caption: "Quartier de Shibuya - L'effervescence urbaine",
+          location: "Shibuya, Tokyo"
+        },
+        {
+          id: 4,
+          url: "https://images.unsplash.com/photo-1590253230532-a67f6bc61b7f?w=800&h=600&fit=crop",
+          caption: "Mont Fuji - Vue depuis le lac Kawaguchi",
+          location: "Lac Kawaguchi"
+        },
+        {
+          id: 5,
+          url: "https://images.unsplash.com/photo-1528164344705-47542687000d?w=800&h=600&fit=crop",
+          caption: "Jardin zen - Moments de sérénité",
+          location: "Kyoto"
+        },
+        {
+          id: 6,
+          url: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&h=600&fit=crop",
+          caption: "Cuisine locale - Découverte gastronomique",
+          location: "Restaurant local"
+        },
+        {
+          id: 7,
+          url: "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=800&h=600&fit=crop",
+          caption: "Forêt de bambous - Chemin mystique",
+          location: "Arashiyama, Kyoto"
+        },
+        {
+          id: 8,
+          url: "https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=800&h=600&fit=crop",
+          caption: "Sanctuaire Fushimi Inari - Milliers de torii",
+          location: "Fushimi, Kyoto"
+        },
+        {
+          id: 9,
+          url: "https://images.unsplash.com/photo-1554797589-7241bb691973?w=800&h=600&fit=crop",
+          caption: "Château d'Osaka - Histoire et architecture",
+          location: "Osaka"
+        },
+        {
+          id: 10,
+          url: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop",
+          caption: "Parc aux cerfs - Rencontre avec la nature",
+          location: "Nara"
+        },
+        {
+          id: 11,
+          url: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&h=600&fit=crop",
+          caption: "Train à grande vitesse - Voyage confortable",
+          location: "En route vers Hiroshima"
+        },
+        {
+          id: 12,
+          url: "https://images.unsplash.com/photo-1576986236678-a6b6e7e1b3e4?w=800&h=600&fit=crop",
+          caption: "Mémorial de la paix - Moment de recueillement",
+          location: "Hiroshima"
+        },
+        {
+          id: 13,
+          url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&h=600&fit=crop",
+          caption: "Île de Miyajima - Torii flottant",
+          location: "Miyajima"
+        },
+        {
+          id: 14,
+          url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
+          caption: "Marché nocturne - Ambiance festive",
+          location: "Osaka"
+        },
+        {
+          id: 15,
+          url: "https://images.unsplash.com/photo-1570198788998-f4d9d5d65d5e?w=800&h=600&fit=crop",
+          caption: "Départ - Souvenirs inoubliables",
+          location: "Aéroport de Tokyo"
+        }
+      ];
+
+      res.json(demoPhotos);
+    } catch (error) {
+      console.error('Error fetching video photos:', error);
+      res.status(500).json({ message: 'Failed to fetch video photos' });
+    }
+  });
+
   app.get("/api/videos/:videoId", async (req, res) => {
     try {
       const videoId = req.params.videoId;
