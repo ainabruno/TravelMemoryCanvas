@@ -109,7 +109,9 @@ The application uses three main entities:
 - Schema management via Drizzle migrations in `/migrations` directory
 
 ## Changelog
-- June 15, 2025. Initial setup
+- June 15, 2025: Initial setup with in-memory storage
+- June 15, 2025: Added PostgreSQL database with persistent storage
+- June 15, 2025: Improved photo upload for multiple file selection (up to 20 files)
 
 ## User Preferences
 
