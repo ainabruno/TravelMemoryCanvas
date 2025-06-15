@@ -3069,6 +3069,373 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Travel Groups API Routes
+  
+  // Get user's travel groups
+  app.get('/api/travel-groups', async (req, res) => {
+    try {
+      // Demo groups data
+      const groups = [
+        {
+          id: 1,
+          name: 'Aventure au Japon',
+          description: 'Exploration de Tokyo et Kyoto entre amis',
+          coverImageUrl: null,
+          ownerId: 'user_demo',
+          isPrivate: false,
+          joinCode: 'JAPAN2024',
+          maxMembers: 8,
+          tags: ['culture', 'gastronomie', 'aventure'],
+          location: 'Tokyo, Japon',
+          budget: 'confortable',
+          travelStyle: 'culturel',
+          memberCount: 5,
+          tripCount: 2,
+          createdAt: '2024-05-15T10:00:00Z',
+          role: 'owner'
+        },
+        {
+          id: 2,
+          name: 'Road Trip Europe',
+          description: 'Tour des capitales européennes en van',
+          coverImageUrl: null,
+          ownerId: 'user_other',
+          isPrivate: true,
+          joinCode: 'EUROPE24',
+          maxMembers: 6,
+          tags: ['road-trip', 'liberté', 'découverte'],
+          location: 'Europe',
+          budget: 'moyen',
+          travelStyle: 'aventure',
+          memberCount: 4,
+          tripCount: 1,
+          createdAt: '2024-04-20T14:30:00Z',
+          role: 'member'
+        },
+        {
+          id: 3,
+          name: 'Détente Bali',
+          description: 'Retraite yoga et plages paradisiaques',
+          coverImageUrl: null,
+          ownerId: 'user_demo',
+          isPrivate: false,
+          joinCode: 'BALI2024',
+          maxMembers: 10,
+          tags: ['détente', 'yoga', 'plage'],
+          location: 'Bali, Indonésie',
+          budget: 'luxe',
+          travelStyle: 'detente',
+          memberCount: 7,
+          tripCount: 1,
+          createdAt: '2024-03-10T09:15:00Z',
+          role: 'admin'
+        }
+      ];
+      
+      res.json(groups);
+    } catch (error) {
+      console.error('Error fetching travel groups:', error);
+      res.status(500).json({ message: 'Failed to fetch travel groups' });
+    }
+  });
+
+  // Get group details
+  app.get('/api/travel-groups/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Demo group details
+      const groupDetails = {
+        id: parseInt(id),
+        name: 'Aventure au Japon',
+        description: 'Exploration de Tokyo et Kyoto entre amis',
+        totalMessages: 156,
+        activeTasks: 8,
+        completedTasks: 12,
+        upcomingEvents: 3,
+        totalExpenses: 2500,
+        settings: {
+          allowInvites: true,
+          allowFileSharing: true,
+          autoTranslate: false
+        }
+      };
+      
+      res.json(groupDetails);
+    } catch (error) {
+      console.error('Error fetching group details:', error);
+      res.status(500).json({ message: 'Failed to fetch group details' });
+    }
+  });
+
+  // Get group members
+  app.get('/api/travel-groups/:id/members', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Demo members data
+      const members = [
+        {
+          id: 1,
+          userId: 'user_demo',
+          role: 'owner',
+          nickname: 'Alex',
+          avatar: null,
+          joinedAt: '2024-05-15T10:00:00Z',
+          isOnline: true
+        },
+        {
+          id: 2,
+          userId: 'user_2',
+          role: 'admin',
+          nickname: 'Marie',
+          avatar: null,
+          joinedAt: '2024-05-16T14:20:00Z',
+          isOnline: true
+        },
+        {
+          id: 3,
+          userId: 'user_3',
+          role: 'member',
+          nickname: 'Pierre',
+          avatar: null,
+          joinedAt: '2024-05-18T09:45:00Z',
+          isOnline: false
+        },
+        {
+          id: 4,
+          userId: 'user_4',
+          role: 'member',
+          nickname: 'Sophie',
+          avatar: null,
+          joinedAt: '2024-05-20T16:30:00Z',
+          isOnline: true
+        },
+        {
+          id: 5,
+          userId: 'user_5',
+          role: 'member',
+          nickname: 'Lucas',
+          avatar: null,
+          joinedAt: '2024-05-22T11:15:00Z',
+          isOnline: false
+        }
+      ];
+      
+      res.json(members);
+    } catch (error) {
+      console.error('Error fetching group members:', error);
+      res.status(500).json({ message: 'Failed to fetch group members' });
+    }
+  });
+
+  // Get group messages
+  app.get('/api/travel-groups/:id/messages', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Demo messages data
+      const messages = [
+        {
+          id: 1,
+          userId: 'user_demo',
+          userName: 'Alex',
+          userAvatar: null,
+          content: 'Salut tout le monde ! J\'ai réservé les billets d\'avion pour Tokyo. Départ le 15 juillet !',
+          messageType: 'text',
+          createdAt: '2024-06-15T10:30:00Z',
+          isEdited: false
+        },
+        {
+          id: 2,
+          userId: 'user_2',
+          userName: 'Marie',
+          userAvatar: null,
+          content: 'Génial ! J\'ai hâte. Est-ce qu\'on a déjà réservé l\'hôtel à Shibuya ?',
+          messageType: 'text',
+          createdAt: '2024-06-15T10:32:00Z',
+          isEdited: false
+        },
+        {
+          id: 3,
+          userId: 'user_3',
+          userName: 'Pierre',
+          userAvatar: null,
+          content: 'Je m\'occupe de l\'hôtel aujourd\'hui. J\'ai trouvé un super ryokan traditionnel !',
+          messageType: 'text',
+          createdAt: '2024-06-15T10:35:00Z',
+          isEdited: false
+        },
+        {
+          id: 4,
+          userId: 'user_4',
+          userName: 'Sophie',
+          userAvatar: null,
+          content: 'N\'oubliez pas qu\'on doit aussi prévoir les JR Pass pour les trains',
+          messageType: 'text',
+          createdAt: '2024-06-15T10:40:00Z',
+          isEdited: false
+        },
+        {
+          id: 5,
+          userId: 'user_5',
+          userName: 'Lucas',
+          userAvatar: null,
+          content: 'Parfait ! Je vais créer une checklist des choses à ne pas oublier',
+          messageType: 'text',
+          createdAt: '2024-06-15T10:45:00Z',
+          isEdited: false
+        }
+      ];
+      
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching group messages:', error);
+      res.status(500).json({ message: 'Failed to fetch group messages' });
+    }
+  });
+
+  // Get group tasks
+  app.get('/api/travel-groups/:id/tasks', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Demo tasks data
+      const tasks = [
+        {
+          id: 1,
+          title: 'Réserver les billets d\'avion',
+          description: 'Trouver les meilleurs tarifs pour Tokyo',
+          assignedTo: 'user_demo',
+          assignedToName: 'Alex',
+          status: 'completed',
+          priority: 'high',
+          dueDate: '2024-06-20T00:00:00Z',
+          category: 'transport',
+          createdBy: 'user_demo',
+          createdAt: '2024-06-10T09:00:00Z'
+        },
+        {
+          id: 2,
+          title: 'Réserver l\'hébergement',
+          description: 'Trouver un ryokan traditionnel à Kyoto',
+          assignedTo: 'user_3',
+          assignedToName: 'Pierre',
+          status: 'in_progress',
+          priority: 'high',
+          dueDate: '2024-06-25T00:00:00Z',
+          category: 'hébergement',
+          createdBy: 'user_demo',
+          createdAt: '2024-06-12T14:30:00Z'
+        },
+        {
+          id: 3,
+          title: 'Acheter les JR Pass',
+          description: 'Commander les pass de train pour tout le groupe',
+          assignedTo: 'user_4',
+          assignedToName: 'Sophie',
+          status: 'pending',
+          priority: 'medium',
+          dueDate: '2024-07-01T00:00:00Z',
+          category: 'transport',
+          createdBy: 'user_2',
+          createdAt: '2024-06-14T11:15:00Z'
+        },
+        {
+          id: 4,
+          title: 'Préparer l\'itinéraire détaillé',
+          description: 'Planning jour par jour avec les activités',
+          assignedTo: 'user_5',
+          assignedToName: 'Lucas',
+          status: 'pending',
+          priority: 'medium',
+          dueDate: '2024-07-05T00:00:00Z',
+          category: 'planning',
+          createdBy: 'user_5',
+          createdAt: '2024-06-15T08:45:00Z'
+        }
+      ];
+      
+      res.json(tasks);
+    } catch (error) {
+      console.error('Error fetching group tasks:', error);
+      res.status(500).json({ message: 'Failed to fetch group tasks' });
+    }
+  });
+
+  // Create new travel group
+  app.post('/api/travel-groups', async (req, res) => {
+    try {
+      const groupData = req.body;
+      
+      // Generate join code for private groups
+      const joinCode = groupData.isPrivate ? 
+        Math.random().toString(36).substring(2, 8).toUpperCase() : null;
+      
+      // Simulate creating group
+      const newGroup = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        ...groupData,
+        joinCode,
+        ownerId: 'user_demo',
+        memberCount: 1,
+        tripCount: 0,
+        createdAt: new Date().toISOString(),
+        role: 'owner'
+      };
+      
+      res.json(newGroup);
+    } catch (error) {
+      console.error('Error creating travel group:', error);
+      res.status(500).json({ message: 'Failed to create travel group' });
+    }
+  });
+
+  // Join group with code
+  app.post('/api/travel-groups/join', async (req, res) => {
+    try {
+      const { joinCode } = req.body;
+      
+      // Simulate joining group
+      if (joinCode && joinCode.length > 0) {
+        res.json({ 
+          message: 'Successfully joined group',
+          groupId: Math.floor(Math.random() * 100) + 1
+        });
+      } else {
+        res.status(400).json({ message: 'Invalid join code' });
+      }
+    } catch (error) {
+      console.error('Error joining group:', error);
+      res.status(500).json({ message: 'Failed to join group' });
+    }
+  });
+
+  // Send message to group
+  app.post('/api/travel-groups/:id/messages', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const messageData = req.body;
+      
+      // Simulate sending message
+      const newMessage = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        userId: 'user_demo',
+        userName: 'Utilisateur',
+        userAvatar: null,
+        content: messageData.content,
+        messageType: messageData.messageType || 'text',
+        createdAt: new Date().toISOString(),
+        isEdited: false
+      };
+      
+      res.json(newMessage);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      res.status(500).json({ message: 'Failed to send message' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

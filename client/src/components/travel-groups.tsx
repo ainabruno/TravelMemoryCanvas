@@ -286,7 +286,11 @@ export default function TravelGroups() {
               <DialogHeader>
                 <DialogTitle>Rejoindre un groupe</DialogTitle>
               </DialogHeader>
-              <form action={handleJoinGroup} className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                handleJoinGroup(formData);
+              }} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="joinCode">Code d'invitation</Label>
                   <Input
@@ -314,7 +318,11 @@ export default function TravelGroups() {
               <DialogHeader>
                 <DialogTitle>Créer un nouveau groupe</DialogTitle>
               </DialogHeader>
-              <form action={handleCreateGroup} className="space-y-4">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                handleCreateGroup(formData);
+              }} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Nom du groupe *</Label>
@@ -353,10 +361,10 @@ export default function TravelGroups() {
                         <SelectValue placeholder="Sélectionnez un budget" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="economique">Économique (< 1000€)</SelectItem>
+                        <SelectItem value="economique">Économique (&lt; 1000€)</SelectItem>
                         <SelectItem value="moyen">Moyen (1000-3000€)</SelectItem>
                         <SelectItem value="confortable">Confortable (3000-5000€)</SelectItem>
-                        <SelectItem value="luxe">Luxe (> 5000€)</SelectItem>
+                        <SelectItem value="luxe">Luxe (&gt; 5000€)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
