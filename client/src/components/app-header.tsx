@@ -1,5 +1,6 @@
 import { Camera, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import NotificationCenter from "@/components/notification-center";
 
 export default function AppHeader() {
   return (
