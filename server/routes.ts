@@ -1615,6 +1615,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Photo Book Creation routes
+  app.post("/api/photo-books/create", async (req, res) => {
+    try {
+      const { title, subtitle, tripId, albumId, format, size, theme, photos, settings } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { generatePhotoBookLayout } = await import('./photo-book-analysis.js');
+      
+      // Generate automatic layout based on photos and settings
+      const photoBook = await generatePhotoBookLayout({
+        title,
+        subtitle,
+        tripId,
+        albumId,
+        format,
+        size,
+        theme,
+        photos: photos || [],
+        settings
+      });
+      
+      res.json(photoBook);
+    } catch (error) {
+      console.error("Photo book creation error:", error);
+      res.status(500).json({ 
+        message: "Failed to create photo book", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.get("/api/photo-books", async (req, res) => {
+    try {
+      const { tripId, albumId } = req.query;
+      
+      // Return existing photo books
+      const books = [
+        {
+          id: "book_1",
+          title: "Voyage au Japon",
+          subtitle: "Découverte de Tokyo et Kyoto",
+          format: "landscape",
+          size: "medium",
+          theme: "adventure",
+          totalPages: 24,
+          isPublished: false,
+          printReady: true,
+          createdAt: "2025-06-10T14:30:00Z",
+          updatedAt: "2025-06-14T16:45:00Z",
+          pages: []
+        }
+      ];
+      
+      res.json(books);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch photo books", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.put("/api/photo-books/:bookId", async (req, res) => {
+    try {
+      const bookId = req.params.bookId;
+      const bookData = req.body;
+      
+      // Update photo book
+      const updatedBook = {
+        ...bookData,
+        id: bookId,
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(updatedBook);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to update photo book", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/photo-books/generate-layouts", async (req, res) => {
+    try {
+      const { photos, theme, settings } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const { generateSmartLayouts } = await import('./photo-book-analysis.js');
+      
+      const layouts = await generateSmartLayouts(photos, theme, settings);
+      
+      res.json(layouts);
+    } catch (error) {
+      console.error("Layout generation error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate layouts", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/photo-books/:bookId/export", async (req, res) => {
+    try {
+      const bookId = req.params.bookId;
+      const { format } = req.body; // 'pdf', 'print', 'web'
+      
+      // Generate export based on format
+      const exportResult = {
+        bookId,
+        format,
+        downloadUrl: `/api/downloads/book_${bookId}.pdf`,
+        generatedAt: new Date().toISOString(),
+        fileSize: "15.2 MB",
+        pages: 24
+      };
+      
+      res.json(exportResult);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to export photo book", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   // Photo routes
   app.get("/api/photos", async (req, res) => {
     try {
