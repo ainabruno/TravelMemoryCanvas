@@ -25,6 +25,7 @@ function Router() {
       <Route path="/photo-books" component={PhotoBooksPage} />
       <Route path="/videos" component={VideoGenerationPage} />
       <Route path="/enhanced-maps" component={EnhancedMaps} />
+      <Route path="/social-import" component={SocialImportPage} />
       <Route component={NotFound} />
     </Switch>
   );
