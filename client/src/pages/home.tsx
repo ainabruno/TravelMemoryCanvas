@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TripMap from "@/components/trip-map";
-import { Camera, Images, Globe, Share, Map, Users, UserPlus } from "lucide-react";
+import { Camera, Images, Globe, Share, Map, Users, UserPlus, TrendingUp, Star, Heart, MapPin, Calendar, Sparkles, ArrowRight, Plus } from "lucide-react";
 import { useState } from "react";
 
 interface Stats {
@@ -97,82 +97,226 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <AppHeader />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 md:pb-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Your Travel Stories</h2>
-            <p className="text-slate-600">Organize, edit, and share your beautiful travel memories</p>
+        {/* Hero Section */}
+        <div className="mb-12">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white p-8 lg:p-12 mb-8">
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <Sparkles className="w-8 h-8" />
+                </div>
+                <div>
+                  <h1 className="text-4xl lg:text-5xl font-bold mb-2">Wanderlust</h1>
+                  <p className="text-xl text-blue-100">Vos souvenirs de voyage, magnifiés par l'IA</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div>
+                  <p className="text-lg text-blue-100 mb-6 leading-relaxed">
+                    Organisez, éditez et partagez vos plus beaux souvenirs de voyage avec notre plateforme intelligente. 
+                    De l'anonymisation automatique à la génération de vidéos, découvrez une nouvelle façon de revivre vos aventures.
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full backdrop-blur-sm">
+                      <Camera className="w-4 h-4" />
+                      <span className="text-sm font-medium">Photos IA</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full backdrop-blur-sm">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm font-medium">Collaboration</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full backdrop-blur-sm">
+                      <MapPin className="w-4 h-4" />
+                      <span className="text-sm font-medium">Géolocalisation</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="hidden lg:block">
+                  <div className="relative">
+                    <div className="absolute -top-4 -right-4 w-32 h-32 bg-yellow-400/30 rounded-full blur-2xl"></div>
+                    <div className="absolute -bottom-4 -left-4 w-40 h-40 bg-pink-400/30 rounded-full blur-2xl"></div>
+                    <div className="relative grid grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <div className="h-24 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
+                          <Globe className="w-8 h-8 text-blue-200" />
+                        </div>
+                        <div className="h-32 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
+                          <Share className="w-10 h-10 text-purple-200" />
+                        </div>
+                      </div>
+                      <div className="space-y-4 mt-8">
+                        <div className="h-32 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
+                          <Images className="w-10 h-10 text-indigo-200" />
+                        </div>
+                        <div className="h-24 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
+                          <Star className="w-8 h-8 text-yellow-200" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Quick Stats */}
+          {/* Enhanced Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
+            <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-2 bg-blue-500/10 rounded-xl">
+                        <Camera className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <span className="text-sm font-medium text-blue-700">Voyages</span>
+                    </div>
                     {statsLoading ? (
                       <Skeleton className="h-8 w-12 mb-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-slate-900">{stats?.totalTrips || 0}</p>
+                      <p className="text-3xl font-bold text-blue-900">{stats?.totalTrips || 0}</p>
                     )}
-                    <p className="text-sm text-slate-600">Total Trips</p>
                   </div>
-                  <Camera className="text-adventure-blue text-xl" />
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 text-green-600 text-sm">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>+12%</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4">
+            <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-br from-green-50 to-emerald-100/50">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-2 bg-green-500/10 rounded-xl">
+                        <Images className="w-5 h-5 text-green-600" />
+                      </div>
+                      <span className="text-sm font-medium text-green-700">Photos</span>
+                    </div>
                     {statsLoading ? (
                       <Skeleton className="h-8 w-12 mb-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-slate-900">{stats?.totalPhotos || 0}</p>
+                      <p className="text-3xl font-bold text-green-900">{stats?.totalPhotos || 0}</p>
                     )}
-                    <p className="text-sm text-slate-600">Photos</p>
                   </div>
-                  <Images className="text-nature-green text-xl" />
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 text-green-600 text-sm">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>+24%</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4">
+            <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-br from-purple-50 to-violet-100/50">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-2 bg-purple-500/10 rounded-xl">
+                        <Globe className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <span className="text-sm font-medium text-purple-700">Pays</span>
+                    </div>
                     {statsLoading ? (
                       <Skeleton className="h-8 w-12 mb-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-slate-900">{stats?.totalCountries || 0}</p>
+                      <p className="text-3xl font-bold text-purple-900">{stats?.totalCountries || 0}</p>
                     )}
-                    <p className="text-sm text-slate-600">Countries</p>
                   </div>
-                  <Globe className="text-wanderlust-purple text-xl" />
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 text-green-600 text-sm">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>+8%</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4">
+            <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-br from-orange-50 to-amber-100/50">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-2 bg-orange-500/10 rounded-xl">
+                        <Heart className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <span className="text-sm font-medium text-orange-700">Partages</span>
+                    </div>
                     {statsLoading ? (
                       <Skeleton className="h-8 w-12 mb-1" />
                     ) : (
-                      <p className="text-2xl font-bold text-slate-900">{stats?.sharedPosts || 0}</p>
+                      <p className="text-3xl font-bold text-orange-900">{stats?.sharedPosts || 0}</p>
                     )}
-                    <p className="text-sm text-slate-600">Shared</p>
                   </div>
-                  <Share className="text-sunset-orange text-xl" />
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 text-green-600 text-sm">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>+16%</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-blue-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 bg-blue-50 rounded-2xl mb-3 group-hover:bg-blue-100 transition-colors">
+                  <Plus className="w-6 h-6 text-blue-600" />
+                </div>
+                <span className="font-medium text-gray-900">Nouveau Voyage</span>
+                <span className="text-sm text-gray-500 mt-1">Créer un voyage</span>
+              </div>
+            </button>
+
+            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-green-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 bg-green-50 rounded-2xl mb-3 group-hover:bg-green-100 transition-colors">
+                  <Camera className="w-6 h-6 text-green-600" />
+                </div>
+                <span className="font-medium text-gray-900">Importer Photos</span>
+                <span className="text-sm text-gray-500 mt-1">Ajouter des souvenirs</span>
+              </div>
+            </button>
+
+            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-purple-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 bg-purple-50 rounded-2xl mb-3 group-hover:bg-purple-100 transition-colors">
+                  <Users className="w-6 h-6 text-purple-600" />
+                </div>
+                <span className="font-medium text-gray-900">Album Partagé</span>
+                <span className="text-sm text-gray-500 mt-1">Collaborer</span>
+              </div>
+            </button>
+
+            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-orange-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 bg-orange-50 rounded-2xl mb-3 group-hover:bg-orange-100 transition-colors">
+                  <Sparkles className="w-6 h-6 text-orange-600" />
+                </div>
+                <span className="font-medium text-gray-900">IA Créative</span>
+                <span className="text-sm text-gray-500 mt-1">Générer du contenu</span>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -181,20 +325,24 @@ export default function Home() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="mb-8">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="map">Map View</TabsTrigger>
-            <TabsTrigger value="photos">Photos</TabsTrigger>
-            <TabsTrigger value="albums">Albums</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="map" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Carte</TabsTrigger>
+            <TabsTrigger value="photos" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Photos</TabsTrigger>
+            <TabsTrigger value="albums" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Albums</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-8">
             {/* Recent Trips */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-slate-900">Recent Trips</h3>
-                <button className="text-adventure-blue hover:text-blue-700 font-medium">
-                  View All →
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1">Voyages Récents</h3>
+                  <p className="text-gray-600">Vos dernières aventures de voyage</p>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl font-medium transition-colors">
+                  Voir tout
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
@@ -226,22 +374,26 @@ export default function Home() {
         {/* Featured Albums */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-slate-900">Featured Albums</h3>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-1">Albums en Vedette</h3>
+              <p className="text-gray-600">Vos collections de photos favorites</p>
+            </div>
             <div className="flex gap-2">
               <SharedAlbumModal>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors">
+                <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-sm font-medium transition-colors">
                   <Users className="w-4 h-4" />
-                  Create Shared
+                  Album Partagé
                 </button>
               </SharedAlbumModal>
               <JoinSharedAlbum>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-sm font-medium transition-colors">
+                <button className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-xl text-sm font-medium transition-colors">
                   <UserPlus className="w-4 h-4" />
-                  Join Album
+                  Rejoindre
                 </button>
               </JoinSharedAlbum>
-              <button className="text-adventure-blue hover:text-blue-700 font-medium">
-                Create Album +
+              <button className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-xl font-medium transition-colors">
+                <Plus className="w-4 h-4" />
+                Créer Album
               </button>
             </div>
           </div>
@@ -270,13 +422,20 @@ export default function Home() {
         {/* Recent Photos */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-slate-900">Recent Photos</h3>
-            <div className="flex items-center space-x-2">
-              <button className="p-2 text-slate-600 hover:text-adventure-blue hover:bg-blue-50 rounded-lg transition-colors">
-                <i className="fas fa-th"></i>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-1">Photos Récentes</h3>
+              <p className="text-gray-600">Vos derniers souvenirs capturés</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="p-2 bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
+                <Images className="w-5 h-5" />
               </button>
-              <button className="p-2 text-slate-600 hover:text-adventure-blue hover:bg-blue-50 rounded-lg transition-colors">
-                <i className="fas fa-list"></i>
+              <button className="p-2 bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
+                <Calendar className="w-5 h-5" />
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl font-medium transition-colors">
+                Voir tout
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -290,17 +449,19 @@ export default function Home() {
         </div>
           </TabsContent>
           
-          <TabsContent value="map" className="space-y-4">
-            <div className="text-center mb-4">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Travel Map</h3>
-              <p className="text-slate-600">Explore your photos and trips on an interactive map</p>
+          <TabsContent value="map" className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Carte de Voyage Interactive</h3>
+              <p className="text-slate-600">Explorez vos photos et voyages sur une carte interactive</p>
             </div>
             
-            <TripMap 
-              photos={photos}
-              height="600px"
-              className="border rounded-lg shadow-sm"
-            />
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <TripMap 
+                photos={photos}
+                height="600px"
+                className="rounded-xl overflow-hidden"
+              />
+            </div>
           </TabsContent>
           
           <TabsContent value="photos" className="space-y-4">
