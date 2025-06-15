@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import VideoGenerator from "@/components/video-generator";
+import VideoTest from "@/components/video-test";
 import { Video, Play, Film, Music, Camera, Settings } from "lucide-react";
 
 export default function VideoGenerationPage() {
@@ -18,6 +19,10 @@ export default function VideoGenerationPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* Test Component */}
+      <VideoTest />
+      
+      <div className="mb-8"></div>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Génération de vidéos automatiques</h1>
