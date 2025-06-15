@@ -809,35 +809,43 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
             Length={existingVideos?.length || 0}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Simplified rendering - force display */}
-            {existingVideos?.map((video: GeneratedVideo) => 
-              <div key={video.id} className="border-2 border-blue-500 rounded-lg p-4 bg-white shadow-md">
-                <div className="aspect-video bg-gray-200 rounded mb-3 flex items-center justify-center">
-                  <Video className="w-12 h-12 text-gray-400" />
+          {/* Test direct sans map */}
+          <div className="space-y-4">
+            <div className="border-4 border-red-500 bg-yellow-100 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-black">TEST DIRECT - Video 1</h3>
+              <p className="text-black">Voyage au Japon - Cinématique</p>
+              <p className="text-black">Status: Prêt | 1080p | 2:00</p>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded mt-2">Lire vidéo</button>
+            </div>
+            
+            <div className="border-4 border-red-500 bg-yellow-100 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-black">TEST DIRECT - Video 2</h3>
+              <p className="text-black">Moments en famille</p>
+              <p className="text-black">Status: Génération... | 1080p | 1:30</p>
+              <button className="bg-gray-500 text-white px-4 py-2 rounded mt-2" disabled>En cours...</button>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <h3 className="font-bold mb-4 text-black">Test avec map() :</h3>
+            <div className="space-y-2">
+              {existingVideos?.map((video: GeneratedVideo, index: number) => (
+                <div key={video.id} style={{
+                  border: '3px solid green',
+                  backgroundColor: 'lightblue',
+                  padding: '16px',
+                  margin: '8px 0',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ color: 'black', fontSize: '18px', fontWeight: 'bold' }}>
+                    #{index + 1}: {video.title}
+                  </div>
+                  <div style={{ color: 'black' }}>
+                    Durée: {video.duration}s | Qualité: {video.quality} | Status: {video.status}
+                  </div>
                 </div>
-                <h4 className="font-bold mb-1 text-black text-lg">{video.title}</h4>
-                <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-                  <span>{formatTime(video.duration)}</span>
-                  <Badge variant="outline" className="text-xs">{video.quality}</Badge>
-                  <Badge variant={video.status === 'ready' ? 'default' : 'secondary'} className="text-xs">
-                    {video.status === 'ready' ? 'Prêt' : 'Génération...'}
-                  </Badge>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" className="bg-blue-500 text-white">
-                    <Play className="w-3 h-3 mr-1" />
-                    Lire
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Download className="w-3 h-3" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Share className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
