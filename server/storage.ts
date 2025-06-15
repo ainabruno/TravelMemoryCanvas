@@ -1,6 +1,6 @@
-import { trips, albums, photos, albumContributors, type Trip, type Album, type Photo, type AlbumContributor, type InsertTrip, type InsertAlbum, type InsertPhoto, type InsertAlbumContributor } from "@shared/schema";
+import { trips, albums, photos, albumContributors, photoComments, albumActivity, photoReactions, collaborationSessions, type Trip, type Album, type Photo, type AlbumContributor, type PhotoComment, type AlbumActivity, type PhotoReaction, type CollaborationSession, type InsertTrip, type InsertAlbum, type InsertPhoto, type InsertAlbumContributor, type InsertPhotoComment, type InsertAlbumActivity, type InsertPhotoReaction, type InsertCollaborationSession } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Trip operations
@@ -34,6 +34,26 @@ export interface IStorage {
   createPhoto(photo: InsertPhoto): Promise<Photo>;
   updatePhoto(id: number, photo: Partial<InsertPhoto>): Promise<Photo | undefined>;
   deletePhoto(id: number): Promise<boolean>;
+
+  // Comments operations
+  getPhotoComments(photoId: number): Promise<PhotoComment[]>;
+  createPhotoComment(comment: InsertPhotoComment): Promise<PhotoComment>;
+  deletePhotoComment(id: number): Promise<boolean>;
+
+  // Reactions operations
+  getPhotoReactions(photoId: number): Promise<PhotoReaction[]>;
+  createPhotoReaction(reaction: InsertPhotoReaction): Promise<PhotoReaction>;
+  deletePhotoReaction(photoId: number, contributorName: string, reaction: string): Promise<boolean>;
+
+  // Activity operations
+  getAlbumActivity(albumId: number): Promise<AlbumActivity[]>;
+  createAlbumActivity(activity: InsertAlbumActivity): Promise<AlbumActivity>;
+
+  // Collaboration sessions
+  getActiveCollaborators(albumId: number): Promise<CollaborationSession[]>;
+  createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession>;
+  updateSessionActivity(sessionId: string): Promise<boolean>;
+  endCollaborationSession(sessionId: string): Promise<boolean>;
 
   // Stats
   getStats(): Promise<{
@@ -211,6 +231,95 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
+  // Comments operations
+  async getPhotoComments(photoId: number): Promise<PhotoComment[]> {
+    return await db.select().from(photoComments)
+      .where(eq(photoComments.photoId, photoId))
+      .orderBy(photoComments.createdAt);
+  }
+
+  async createPhotoComment(comment: InsertPhotoComment): Promise<PhotoComment> {
+    const [newComment] = await db.insert(photoComments).values(comment).returning();
+    return newComment;
+  }
+
+  async deletePhotoComment(id: number): Promise<boolean> {
+    const result = await db.delete(photoComments).where(eq(photoComments.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Reactions operations
+  async getPhotoReactions(photoId: number): Promise<PhotoReaction[]> {
+    return await db.select().from(photoReactions)
+      .where(eq(photoReactions.photoId, photoId))
+      .orderBy(photoReactions.createdAt);
+  }
+
+  async createPhotoReaction(reaction: InsertPhotoReaction): Promise<PhotoReaction> {
+    // Remove existing reaction from this user for this photo
+    await db.delete(photoReactions)
+      .where(
+        and(
+          eq(photoReactions.photoId, reaction.photoId),
+          eq(photoReactions.contributorName, reaction.contributorName)
+        )
+      );
+
+    const [newReaction] = await db.insert(photoReactions).values(reaction).returning();
+    return newReaction;
+  }
+
+  async deletePhotoReaction(photoId: number, contributorName: string, reaction: string): Promise<boolean> {
+    const result = await db.delete(photoReactions)
+      .where(
+        and(
+          eq(photoReactions.photoId, photoId),
+          eq(photoReactions.contributorName, contributorName),
+          eq(photoReactions.reaction, reaction)
+        )
+      );
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Activity operations
+  async getAlbumActivity(albumId: number): Promise<AlbumActivity[]> {
+    return await db.select().from(albumActivity)
+      .where(eq(albumActivity.albumId, albumId))
+      .orderBy(albumActivity.createdAt)
+      .limit(50);
+  }
+
+  async createAlbumActivity(activity: InsertAlbumActivity): Promise<AlbumActivity> {
+    const [newActivity] = await db.insert(albumActivity).values(activity).returning();
+    return newActivity;
+  }
+
+  // Collaboration sessions
+  async getActiveCollaborators(albumId: number): Promise<CollaborationSession[]> {
+    return await db.select().from(collaborationSessions)
+      .where(eq(collaborationSessions.albumId, albumId))
+      .where(eq(collaborationSessions.isActive, true));
+  }
+
+  async createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession> {
+    const [newSession] = await db.insert(collaborationSessions).values(session).returning();
+    return newSession;
+  }
+
+  async updateSessionActivity(sessionId: string): Promise<boolean> {
+    const result = await db.update(collaborationSessions)
+      .set({ lastActivity: new Date() })
+      .where(eq(collaborationSessions.sessionId, sessionId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async endCollaborationSession(sessionId: string): Promise<boolean> {
+    const result = await db.update(collaborationSessions)
+      .set({ isActive: false })
+      .where(eq(collaborationSessions.sessionId, sessionId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   async getStats(): Promise<{
     totalTrips: number;
     totalPhotos: number;
@@ -219,13 +328,14 @@ export class DatabaseStorage implements IStorage {
   }> {
     const allTrips = await db.select().from(trips);
     const allPhotos = await db.select().from(photos);
+    const sharedAlbums = await db.select().from(albums).where(eq(albums.isShared, true));
     const countries = new Set(allTrips.map(trip => trip.location)).size;
     
     return {
       totalTrips: allTrips.length,
       totalPhotos: allPhotos.length,
       totalCountries: countries,
-      sharedPosts: Math.floor(allPhotos.length * 0.3), // Mock shared posts
+      sharedPosts: sharedAlbums.length,
     };
   }
 }
