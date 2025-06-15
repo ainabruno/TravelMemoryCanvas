@@ -1,4 +1,4 @@
-import { Camera, Plus, User, Brain } from "lucide-react";
+import { Camera, Plus, User, Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/notification-center";
 
@@ -15,11 +15,14 @@ export default function AppHeader() {
             <nav className="hidden md:flex space-x-6">
               <a href="/" className="text-adventure-blue font-medium">My Trips</a>
               <a href="#" className="text-slate-600 hover:text-adventure-blue transition-colors">Albums</a>
+              <a href="/suggestions" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
+                <Sparkles className="w-4 h-4" />
+                Suggestions
+              </a>
               <a href="/ai-analysis" className="text-slate-600 hover:text-adventure-blue transition-colors flex items-center gap-1">
                 <Brain className="w-4 h-4" />
                 IA Analysis
               </a>
-              <a href="#" className="text-slate-600 hover:text-adventure-blue transition-colors">Search</a>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
