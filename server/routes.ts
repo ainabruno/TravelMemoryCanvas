@@ -341,9 +341,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create activity entry for new reaction
       await storage.createAlbumActivity({
         albumId: 1, // This should be determined from the photo
-        activityType: "reaction_added",
+        action: "reaction_added",
         contributorName,
-        details: `Nouvelle réaction: ${reaction}`
+        description: `Nouvelle réaction: ${reaction}`
       });
       
       res.status(201).json(newReaction);
