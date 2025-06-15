@@ -1287,7 +1287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Import OpenAI for story generation
-      const { generateTravelStory } = await import('./story-analysis');
+      const { generateTravelStory } = await import('./story-analysis.js');
       
       // Generate the travel story
       const story = await generateTravelStory({
