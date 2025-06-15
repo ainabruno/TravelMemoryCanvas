@@ -225,9 +225,23 @@ export default function Home() {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold text-slate-900">Featured Albums</h3>
-            <button className="text-adventure-blue hover:text-blue-700 font-medium">
-              Create Album +
-            </button>
+            <div className="flex gap-2">
+              <SharedAlbumModal>
+                <button className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors">
+                  <Users className="w-4 h-4" />
+                  Create Shared
+                </button>
+              </SharedAlbumModal>
+              <JoinSharedAlbum>
+                <button className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-sm font-medium transition-colors">
+                  <UserPlus className="w-4 h-4" />
+                  Join Album
+                </button>
+              </JoinSharedAlbum>
+              <button className="text-adventure-blue hover:text-blue-700 font-medium">
+                Create Album +
+              </button>
+            </div>
           </div>
 
           {albumsLoading ? (
