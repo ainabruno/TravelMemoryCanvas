@@ -1994,6 +1994,198 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced map data endpoint
+  app.get('/api/maps/enhanced-data', async (req, res) => {
+    try {
+      const { tripId, startDate, endDate, style } = req.query;
+      const photos = await storage.getPhotos();
+      
+      // Filter photos with GPS coordinates
+      const geotaggedPhotos = photos.filter((photo: any) => 
+        photo.latitude && photo.longitude && 
+        !isNaN(parseFloat(photo.latitude)) && 
+        !isNaN(parseFloat(photo.longitude))
+      );
+
+      // Apply filters
+      let filteredPhotos = geotaggedPhotos;
+      
+      if (tripId) {
+        filteredPhotos = filteredPhotos.filter(photo => photo.tripId === parseInt(tripId as string));
+      }
+      
+      if (startDate && endDate) {
+        filteredPhotos = filteredPhotos.filter(photo => {
+          const photoDate = new Date(photo.uploadedAt);
+          return photoDate >= new Date(startDate as string) && photoDate <= new Date(endDate as string);
+        });
+      }
+
+      // Generate routes between photos
+      const generateRoutes = (photos: any[]) => {
+        const sortedPhotos = [...photos].sort((a, b) => 
+          new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
+        );
+        
+        const routes = [];
+        for (let i = 0; i < sortedPhotos.length - 1; i++) {
+          const start = sortedPhotos[i];
+          const end = sortedPhotos[i + 1];
+          
+          const timeDiff = new Date(end.uploadedAt).getTime() - new Date(start.uploadedAt).getTime();
+          if (timeDiff < 24 * 60 * 60 * 1000) {
+            routes.push({
+              id: `route_${start.id}_${end.id}`,
+              coordinates: [
+                [parseFloat(start.latitude), parseFloat(start.longitude)],
+                [parseFloat(end.latitude), parseFloat(end.longitude)]
+              ],
+              distance: calculateDistance(
+                { latitude: parseFloat(start.latitude), longitude: parseFloat(start.longitude) },
+                { latitude: parseFloat(end.latitude), longitude: parseFloat(end.longitude) }
+              ),
+              duration: timeDiff,
+              startPhoto: start.id,
+              endPhoto: end.id,
+              date: new Date(start.uploadedAt).toISOString().split('T')[0]
+            });
+          }
+        }
+        return routes;
+      };
+
+      // Create photo clusters
+      const createClusters = (photos: any[], radiusKm = 0.5) => {
+        const clusters: any[] = [];
+        const processedPhotos = new Set();
+        
+        photos.forEach((photo, index) => {
+          if (processedPhotos.has(index)) return;
+          
+          const cluster = [photo];
+          processedPhotos.add(index);
+          
+          photos.forEach((otherPhoto, otherIndex) => {
+            if (otherIndex !== index && !processedPhotos.has(otherIndex)) {
+              const distance = calculateDistance(
+                { latitude: parseFloat(photo.latitude), longitude: parseFloat(photo.longitude) },
+                { latitude: parseFloat(otherPhoto.latitude), longitude: parseFloat(otherPhoto.longitude) }
+              ) / 1000; // Convert to km
+              
+              if (distance < radiusKm) {
+                cluster.push(otherPhoto);
+                processedPhotos.add(otherIndex);
+              }
+            }
+          });
+          
+          if (cluster.length > 1) {
+            const centerLat = cluster.reduce((sum, p) => sum + parseFloat(p.latitude), 0) / cluster.length;
+            const centerLng = cluster.reduce((sum, p) => sum + parseFloat(p.longitude), 0) / cluster.length;
+            
+            clusters.push({
+              id: `cluster_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              center: [centerLat, centerLng],
+              photos: cluster,
+              radius: radiusKm * 1000,
+              photoCount: cluster.length,
+              timeSpan: {
+                start: Math.min(...cluster.map(p => new Date(p.uploadedAt).getTime())),
+                end: Math.max(...cluster.map(p => new Date(p.uploadedAt).getTime()))
+              }
+            });
+          }
+        });
+        
+        return clusters;
+      };
+
+      // Calculate map bounds
+      const calculateBounds = (photos: any[]) => {
+        if (photos.length === 0) return null;
+        
+        const bounds = photos.reduce(
+          (acc, photo) => {
+            const lat = parseFloat(photo.latitude);
+            const lng = parseFloat(photo.longitude);
+            return {
+              minLat: Math.min(acc.minLat, lat),
+              maxLat: Math.max(acc.maxLat, lat),
+              minLng: Math.min(acc.minLng, lng),
+              maxLng: Math.max(acc.maxLng, lng)
+            };
+          },
+          { minLat: Infinity, maxLat: -Infinity, minLng: Infinity, maxLng: -Infinity }
+        );
+        
+        return {
+          center: [(bounds.minLat + bounds.maxLat) / 2, (bounds.minLng + bounds.maxLng) / 2],
+          northeast: [bounds.maxLat, bounds.maxLng],
+          southwest: [bounds.minLat, bounds.minLng]
+        };
+      };
+
+      // Generate timeline data
+      const generateTimeline = (photos: any[]) => {
+        const timelineData = photos.map(photo => ({
+          id: photo.id,
+          timestamp: new Date(photo.uploadedAt).getTime(),
+          coordinates: [parseFloat(photo.latitude), parseFloat(photo.longitude)],
+          caption: photo.caption,
+          location: photo.location,
+          url: photo.url
+        })).sort((a, b) => a.timestamp - b.timestamp);
+
+        return timelineData;
+      };
+
+      // Calculate statistics
+      const stats = {
+        totalPhotos: filteredPhotos.length,
+        uniqueLocations: new Set(filteredPhotos.map(p => p.location).filter(Boolean)).size,
+        dateRange: filteredPhotos.length > 0 ? {
+          start: Math.min(...filteredPhotos.map(p => new Date(p.uploadedAt).getTime())),
+          end: Math.max(...filteredPhotos.map(p => new Date(p.uploadedAt).getTime()))
+        } : null,
+        totalDistance: 0 // Will be calculated from routes
+      };
+
+      const routes = generateRoutes(filteredPhotos);
+      const clusters = createClusters(filteredPhotos);
+      const bounds = calculateBounds(filteredPhotos);
+      const timeline = generateTimeline(filteredPhotos);
+
+      // Calculate total distance from routes
+      stats.totalDistance = routes.reduce((sum, route) => sum + route.distance, 0);
+
+      const response = {
+        photos: filteredPhotos.map(photo => ({
+          id: photo.id,
+          coordinates: [parseFloat(photo.latitude), parseFloat(photo.longitude)],
+          caption: photo.caption,
+          location: photo.location,
+          originalName: photo.originalName,
+          url: photo.url,
+          uploadedAt: photo.uploadedAt,
+          tripId: photo.tripId,
+          albumId: photo.albumId
+        })),
+        routes,
+        clusters,
+        bounds,
+        timeline,
+        stats,
+        style: style || 'standard',
+        generatedAt: new Date().toISOString()
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching enhanced map data:', error);
+      res.status(500).json({ message: 'Failed to fetch enhanced map data' });
+    }
+  });
+
   app.get("/api/videos/:videoId", async (req, res) => {
     try {
       const videoId = req.params.videoId;
