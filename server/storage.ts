@@ -111,6 +111,67 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
+  // Shared album operations
+  async getSharedAlbum(shareCode: string): Promise<Album | undefined> {
+    const [album] = await db.select().from(albums).where(eq(albums.shareCode, shareCode));
+    return album || undefined;
+  }
+
+  async createSharedAlbum(album: InsertAlbum): Promise<Album & { shareCode: string }> {
+    // Generate unique share code
+    const shareCode = this.generateShareCode();
+    const sharedAlbumData = {
+      ...album,
+      isShared: true,
+      shareCode,
+    };
+
+    const [newAlbum] = await db
+      .insert(albums)
+      .values(sharedAlbumData)
+      .returning();
+    
+    return { ...newAlbum, shareCode };
+  }
+
+  async addContributor(albumId: number, contributor: InsertAlbumContributor): Promise<AlbumContributor> {
+    const [newContributor] = await db
+      .insert(albumContributors)
+      .values({ ...contributor, albumId })
+      .returning();
+    return newContributor;
+  }
+
+  async getContributors(albumId: number): Promise<AlbumContributor[]> {
+    return await db.select().from(albumContributors).where(eq(albumContributors.albumId, albumId));
+  }
+
+  async removeContributor(albumId: number, contributorId: number): Promise<boolean> {
+    const result = await db
+      .delete(albumContributors)
+      .where(eq(albumContributors.id, contributorId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async updateContributorPermissions(contributorId: number, permissions: Partial<InsertAlbumContributor>): Promise<AlbumContributor | undefined> {
+    const [updatedContributor] = await db
+      .update(albumContributors)
+      .set(permissions)
+      .where(eq(albumContributors.id, contributorId))
+      .returning();
+    return updatedContributor || undefined;
+  }
+
+  private generateShareCode(): string {
+    // Generate a unique 8-character alphanumeric code
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
   async getPhotos(): Promise<Photo[]> {
     return await db.select().from(photos).orderBy(photos.uploadedAt);
   }

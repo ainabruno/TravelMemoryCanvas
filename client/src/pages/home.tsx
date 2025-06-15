@@ -7,11 +7,13 @@ import PhotoGrid from "@/components/photo-grid";
 import MobileNav from "@/components/mobile-nav";
 import PhotoEditModal from "@/components/photo-edit-modal";
 import ShareModal from "@/components/share-modal";
+import SharedAlbumModal from "@/components/shared-album-modal";
+import JoinSharedAlbum from "@/components/join-shared-album";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TripMap from "@/components/trip-map";
-import { Camera, Images, Globe, Share, Map } from "lucide-react";
+import { Camera, Images, Globe, Share, Map, Users, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 interface Stats {
