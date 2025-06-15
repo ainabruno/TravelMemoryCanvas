@@ -11,6 +11,7 @@ import FaceDetectionPage from "@/pages/face-detection";
 import PhotoBooksPage from "@/pages/photo-books";
 import VideoGenerationPage from "@/pages/video-generation";
 import EnhancedMaps from "@/pages/enhanced-maps";
+import SocialImportPage from "@/pages/social-import";
 import NotFound from "@/pages/not-found";
 
 function Router() {
