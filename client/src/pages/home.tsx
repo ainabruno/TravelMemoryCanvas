@@ -9,7 +9,9 @@ import PhotoEditModal from "@/components/photo-edit-modal";
 import ShareModal from "@/components/share-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, Images, Globe, Share } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TripMap from "@/components/trip-map";
+import { Camera, Images, Globe, Share, Map } from "lucide-react";
 import { useState } from "react";
 
 interface Stats {
@@ -171,8 +173,18 @@ export default function Home() {
         {/* Photo Upload Zone */}
         <PhotoUploadZone />
 
-        {/* Recent Trips */}
-        <div className="mb-8">
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="overview" className="mb-8">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="map">Map View</TabsTrigger>
+            <TabsTrigger value="photos">Photos</TabsTrigger>
+            <TabsTrigger value="albums">Albums</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="overview" className="space-y-8">
+            {/* Recent Trips */}
+            <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold text-slate-900">Recent Trips</h3>
             <button className="text-adventure-blue hover:text-blue-700 font-medium">
@@ -256,6 +268,50 @@ export default function Home() {
             onShare={handlePhotoShare}
           />
         </div>
+          </TabsContent>
+          
+          <TabsContent value="map" className="space-y-4">
+            <div className="text-center mb-4">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Travel Map</h3>
+              <p className="text-slate-600">Explore your photos and trips on an interactive map</p>
+            </div>
+            
+            <TripMap 
+              photos={photos}
+              height="600px"
+              className="border rounded-lg shadow-sm"
+            />
+          </TabsContent>
+          
+          <TabsContent value="photos" className="space-y-4">
+            <PhotoGrid 
+              photos={photos} 
+              loading={photosLoading}
+              onEdit={handlePhotoEdit}
+              onShare={handlePhotoShare}
+            />
+          </TabsContent>
+          
+          <TabsContent value="albums" className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {albumsLoading ? (
+                [...Array(4)].map((_, i) => (
+                  <Card key={i}>
+                    <Skeleton className="w-full h-32" />
+                    <CardContent className="p-4">
+                      <Skeleton className="h-4 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                albums.slice(0, 8).map((album) => (
+                  <AlbumCard key={album.id} album={album} />
+                ))
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       <MobileNav />
