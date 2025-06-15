@@ -227,15 +227,7 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
     queryKey: ['/api/videos']
   });
 
-  // Debug logging
-  console.log("Video Component Debug:", {
-    loading: videosLoading,
-    error: videosError,
-    data: existingVideos,
-    hasData: !!existingVideos,
-    isArray: Array.isArray(existingVideos),
-    length: existingVideos?.length
-  });
+
 
 
 
@@ -803,7 +795,7 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Film className="w-5 h-5" />
-            Vidéos créées ({existingVideos?.length || 0})
+            Vidéos créées ({Array.isArray(existingVideos) ? existingVideos.length : 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -818,8 +810,8 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {existingVideos && existingVideos.length > 0 ? (
-                existingVideos.map((video: GeneratedVideo) => (
+              {existingVideos && Array.isArray(existingVideos) && existingVideos.length > 0 ? (
+                existingVideos.map((video: any) => (
                   <div key={video.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow bg-white">
                     <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
                       {video.thumbnailUrl ? (
