@@ -223,12 +223,18 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
   });
 
   // Fetch existing videos
-  const { data: existingVideos = [], isLoading: videosLoading, error: videosError } = useQuery({
-    queryKey: ['/api/videos'],
-    queryFn: async () => {
-      const response = await fetch('/api/videos');
-      return response.json();
-    }
+  const { data: existingVideos, isLoading: videosLoading, error: videosError } = useQuery({
+    queryKey: ['/api/videos']
+  });
+
+  // Debug logging
+  console.log("Video Component Debug:", {
+    loading: videosLoading,
+    error: videosError,
+    data: existingVideos,
+    hasData: !!existingVideos,
+    isArray: Array.isArray(existingVideos),
+    length: existingVideos?.length
   });
 
 
@@ -801,227 +807,118 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {/* Unconditional render - no loading states */}
-            <div style={{
-              border: '3px solid #FF0000',
-              backgroundColor: '#FFFFFF',
-              padding: '20px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              display: 'block',
-              width: '100%'
-            }}>
-              <div style={{
-                aspectRatio: '16/9',
-                backgroundColor: '#E5E5E5',
-                borderRadius: '8px',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Video style={{ width: '48px', height: '48px', color: '#9CA3AF' }} />
-              </div>
-              <h4 style={{
-                fontWeight: 'bold',
-                fontSize: '18px',
-                marginBottom: '8px',
-                color: '#000000'
-              }}>
-                Japan Discovery - Cinématique
-              </h4>
-              <p style={{
-                fontSize: '14px',
-                color: '#6B7280',
-                marginBottom: '8px'
-              }}>
-                Vidéo générée automatiquement de votre voyage
-              </p>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '12px'
-              }}>
-                <span style={{
-                  border: '1px solid #D1D5DB',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px'
-                }}>
-                  1080p
-                </span>
-                <span style={{
-                  backgroundColor: '#3B82F6',
-                  color: 'white',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px'
-                }}>
-                  Prêt
-                </span>
-                <span style={{ fontSize: '14px' }}>2:00</span>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={{
-                  backgroundColor: '#3B82F6',
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}>
-                  ▶ Lire
-                </button>
-                <button style={{
-                  border: '1px solid #D1D5DB',
-                  backgroundColor: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}>
-                  ↓
-                </button>
-                <button style={{
-                  border: '1px solid #D1D5DB',
-                  backgroundColor: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}>
-                  ↗
-                </button>
-              </div>
+          {videosLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p>Chargement des vidéos...</p>
             </div>
-
-            <div style={{
-              border: '3px solid #00FF00',
-              backgroundColor: '#FFFFFF',
-              padding: '20px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              display: 'block',
-              width: '100%'
-            }}>
-              <div style={{
-                aspectRatio: '16/9',
-                backgroundColor: '#E5E5E5',
-                borderRadius: '8px',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative'
-              }}>
-                <Video style={{ width: '48px', height: '48px', color: '#9CA3AF' }} />
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0,0,0,0.4)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <div style={{ textAlign: 'center', color: 'white' }}>
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      border: '2px solid white',
-                      borderTop: '2px solid transparent',
-                      borderRadius: '50%',
-                      margin: '0 auto 4px',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
-                    <p style={{ fontSize: '12px', margin: 0 }}>85% terminé</p>
+          ) : videosError ? (
+            <div className="text-center py-8 text-red-500">
+              <p>Erreur lors du chargement des vidéos</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {existingVideos && existingVideos.length > 0 ? (
+                existingVideos.map((video: GeneratedVideo) => (
+                  <div key={video.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow bg-white">
+                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                      {video.thumbnailUrl ? (
+                        <img 
+                          src={video.thumbnailUrl} 
+                          alt={video.title}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="text-center">
+                          <Video className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">Aperçu vidéo</p>
+                        </div>
+                      )}
+                      {video.status === 'generating' && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                          <div className="text-center text-white">
+                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mx-auto mb-2"></div>
+                            <p className="text-sm">{video.progress}% terminé</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-lg text-gray-900 mb-1">{video.title}</h4>
+                        {video.description && (
+                          <p className="text-sm text-gray-600 line-clamp-2">{video.description}</p>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Clock className="w-4 h-4" />
+                        <span>{formatTime(video.duration)}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {video.quality}
+                        </Badge>
+                        <Badge 
+                          variant={video.status === 'ready' ? 'default' : video.status === 'generating' ? 'secondary' : 'destructive'}
+                          className="text-xs"
+                        >
+                          {video.status === 'ready' ? 'Prêt' : video.status === 'generating' ? 'Génération...' : 'Erreur'}
+                        </Badge>
+                      </div>
+                      
+                      {video.metadata && (
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <div className="flex justify-between">
+                            <span>{video.metadata.photoCount} photos</span>
+                            <span>{video.metadata.fileSize}</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2 pt-2">
+                        <Button 
+                          size="sm" 
+                          disabled={video.status !== 'ready'}
+                          className="flex-1"
+                        >
+                          <Play className="w-3 h-3 mr-1" />
+                          Lire
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          disabled={video.status !== 'ready'}
+                        >
+                          <Download className="w-3 h-3" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          disabled={video.status !== 'ready'}
+                        >
+                          <Share className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Video className="w-12 h-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune vidéo créée</h3>
+                  <p className="text-gray-600 mb-4">Commencez par créer votre première vidéo avec vos photos de voyage</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  >
+                    Créer une vidéo
+                  </Button>
                 </div>
-              </div>
-              <h4 style={{
-                fontWeight: 'bold',
-                fontSize: '18px',
-                marginBottom: '8px',
-                color: '#000000'
-              }}>
-                Adventure Essentials - Dynamique
-              </h4>
-              <p style={{
-                fontSize: '14px',
-                color: '#6B7280',
-                marginBottom: '8px'
-              }}>
-                Compilation dynamique de l'album
-              </p>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '12px'
-              }}>
-                <span style={{
-                  border: '1px solid #D1D5DB',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px'
-                }}>
-                  1080p
-                </span>
-                <span style={{
-                  backgroundColor: '#6B7280',
-                  color: 'white',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px'
-                }}>
-                  Génération...
-                </span>
-                <span style={{ fontSize: '14px' }}>1:35</span>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button disabled style={{
-                  backgroundColor: '#D1D5DB',
-                  color: '#9CA3AF',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '14px',
-                  cursor: 'not-allowed',
-                  flex: 1
-                }}>
-                  ▶ Lire
-                </button>
-                <button disabled style={{
-                  border: '1px solid #D1D5DB',
-                  backgroundColor: '#F9FAFB',
-                  color: '#9CA3AF',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  cursor: 'not-allowed'
-                }}>
-                  ↓
-                </button>
-                <button disabled style={{
-                  border: '1px solid #D1D5DB',
-                  backgroundColor: '#F9FAFB',
-                  color: '#9CA3AF',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  cursor: 'not-allowed'
-                }}>
-                  ↗
-                </button>
-              </div>
+              )}
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
