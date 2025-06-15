@@ -1,7 +1,7 @@
 import React from "react";
 import AppHeader from "@/components/app-header";
 import MobileNav from "@/components/mobile-nav";
-import LocationSuggestions from "@/components/location-suggestions";
+import SimpleLocationSuggestions from "@/components/simple-location-suggestions";
 
 export default function SuggestionsPage() {
   return (
@@ -9,7 +9,7 @@ export default function SuggestionsPage() {
       <AppHeader />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <LocationSuggestions />
+        <SimpleLocationSuggestions />
       </main>
 
       <MobileNav />
