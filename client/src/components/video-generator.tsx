@@ -836,18 +836,28 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                         src={video.thumbnailUrl} 
                         alt={video.title}
                         className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          console.log("Image failed to load:", video.thumbnailUrl);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                        onLoad={() => console.log("Image loaded:", video.thumbnailUrl)}
                       />
-                    ) : (
+                    ) : null}
+                    
+                    {/* Fallback content when image fails or doesn't exist */}
+                    {!video.thumbnailUrl && (
                       <div className="text-center">
                         <Video className="w-16 h-16 text-gray-400 mx-auto mb-2" />
                         <p className="text-sm text-gray-500">Aperçu vidéo</p>
                       </div>
                     )}
+                    
+                    {/* Progress overlay for generating videos */}
                     {video.status === 'generating' && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                        <div className="text-center text-white">
-                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mx-auto mb-2"></div>
-                          <p className="text-sm">{video.progress}% terminé</p>
+                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 rounded px-2 py-1">
+                        <div className="flex items-center text-white text-xs">
+                          <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-1"></div>
+                          <span>{video.progress}%</span>
                         </div>
                       </div>
                     )}
