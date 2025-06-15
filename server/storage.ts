@@ -115,8 +115,13 @@ export class MemStorage implements IStorage {
 
   async createTrip(trip: InsertTrip): Promise<Trip> {
     const newTrip: Trip = {
-      ...trip,
       id: this.currentTripId++,
+      title: trip.title,
+      description: trip.description ?? null,
+      location: trip.location,
+      startDate: trip.startDate,
+      endDate: trip.endDate ?? null,
+      coverPhotoUrl: trip.coverPhotoUrl ?? null,
     };
     this.trips.set(newTrip.id, newTrip);
     return newTrip;
@@ -150,8 +155,11 @@ export class MemStorage implements IStorage {
 
   async createAlbum(album: InsertAlbum): Promise<Album> {
     const newAlbum: Album = {
-      ...album,
       id: this.currentAlbumId++,
+      title: album.title,
+      description: album.description ?? null,
+      coverPhotoUrl: album.coverPhotoUrl ?? null,
+      tripId: album.tripId ?? null,
     };
     this.albums.set(newAlbum.id, newAlbum);
     return newAlbum;
@@ -193,9 +201,16 @@ export class MemStorage implements IStorage {
 
   async createPhoto(photo: InsertPhoto): Promise<Photo> {
     const newPhoto: Photo = {
-      ...photo,
       id: this.currentPhotoId++,
+      filename: photo.filename,
+      originalName: photo.originalName,
+      url: photo.url,
+      tripId: photo.tripId ?? null,
+      albumId: photo.albumId ?? null,
+      caption: photo.caption ?? null,
+      location: photo.location ?? null,
       uploadedAt: new Date(),
+      metadata: photo.metadata ?? null,
     };
     this.photos.set(newPhoto.id, newPhoto);
     return newPhoto;
