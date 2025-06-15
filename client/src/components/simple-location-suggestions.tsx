@@ -151,9 +151,20 @@ export default function SimpleLocationSuggestions() {
     return (
       <Card key={suggestion.id} className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="relative">
-          <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-            <IconComponent className="w-16 h-16 text-gray-400" />
-          </div>
+          <img 
+            src={suggestion.imageUrl} 
+            alt={suggestion.name}
+            className="w-full h-48 object-cover"
+            onError={(e) => {
+              // Fallback si l'image ne se charge pas
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.innerHTML = `<div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center"><svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>`;
+              }
+            }}
+          />
           <div className="absolute top-3 right-3">
             <Badge className={`${categoryColor} font-medium`}>
               <IconComponent className="w-3 h-3 mr-1" />
