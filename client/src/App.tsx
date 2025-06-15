@@ -20,13 +20,14 @@ import IntelligentAnonymizationPage from "@/pages/intelligent-anonymization";
 import Subscription from "@/pages/subscription";
 import Marketplace from "@/pages/marketplace";
 import Affiliate from "@/pages/affiliate";
-import RevenueAnalytics from "@/pages/revenue-analytics";
+import RevenueAnalytics from "@/pages/revenue-analytics-fr";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/albums" component={Home} />
       <Route path="/ai-analysis" component={AIAnalysisPage} />
       <Route path="/suggestions" component={SuggestionsPage} />
       <Route path="/stories" component={StoryGenerationPage} />

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import AppHeader from "@/components/app-header";
+import NavigationMenu from "@/components/navigation-menu";
 import PhotoUploadZone from "@/components/photo-upload-zone";
 import TripCard from "@/components/trip-card";
 import AlbumCard from "@/components/album-card";
@@ -100,7 +100,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <AppHeader />
+      <NavigationMenu />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 md:pb-8">
         {/* Hero Section */}
