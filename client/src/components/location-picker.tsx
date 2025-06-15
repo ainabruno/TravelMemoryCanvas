@@ -1,18 +1,22 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import { Icon, LatLngTuple } from "leaflet";
+import { getAddressFromCoordinates, getCurrentLocation, type GPSCoordinates } from "@/lib/gps-utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Navigation, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { MapPin, Navigation, Search, Target } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
-// Fix for default markers
+// Fix for default markers in React Leaflet
 delete (Icon.Default.prototype as any)._getIconUrl;
 Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 interface LocationPickerProps {
@@ -23,160 +27,280 @@ interface LocationPickerProps {
 
 function LocationMarker({ position, onLocationSelect }: { 
   position: LatLngTuple | null; 
-  onLocationSelect: (lat: number, lng: number) => void;
+  onLocationSelect: (location: { lat: number; lng: number; address?: string }) => void;
 }) {
+  const [marker, setMarker] = useState<LatLngTuple | null>(position);
+  const [address, setAddress] = useState<string>("");
+
   const map = useMapEvents({
     click(e) {
-      onLocationSelect(e.latlng.lat, e.latlng.lng);
+      const newPosition: LatLngTuple = [e.latlng.lat, e.latlng.lng];
+      setMarker(newPosition);
+      
+      // Get address for the clicked location
+      getAddressFromCoordinates(e.latlng.lat, e.latlng.lng)
+        .then(addr => {
+          setAddress(addr);
+          onLocationSelect({
+            lat: e.latlng.lat,
+            lng: e.latlng.lng,
+            address: addr
+          });
+        })
+        .catch(() => {
+          onLocationSelect({
+            lat: e.latlng.lat,
+            lng: e.latlng.lng
+          });
+        });
     },
   });
 
-  return position === null ? null : (
-    <Marker position={position}>
+  return marker ? (
+    <Marker position={marker}>
+      <Popup>
+        <div className="p-2">
+          <div className="font-semibold mb-1">Position sélectionnée</div>
+          <div className="text-sm text-gray-600 mb-2">
+            {marker[0].toFixed(6)}, {marker[1].toFixed(6)}
+          </div>
+          {address && (
+            <div className="text-sm text-gray-700">{address}</div>
+          )}
+        </div>
+      </Popup>
     </Marker>
-  );
+  ) : null;
 }
 
 export default function LocationPicker({ onLocationSelect, initialLocation, className = "" }: LocationPickerProps) {
-  const [position, setPosition] = useState<LatLngTuple | null>(
-    initialLocation ? [initialLocation.lat, initialLocation.lng] : null
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; address?: string } | null>(
+    initialLocation ? { lat: initialLocation.lat, lng: initialLocation.lng } : null
   );
-  const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const mapRef = useRef<any>(null);
+  const { toast } = useToast();
 
-  const handleMapClick = async (lat: number, lng: number) => {
-    setPosition([lat, lng]);
-    
-    // Reverse geocoding to get address
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
-      );
-      const data = await response.json();
-      const displayName = data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      setAddress(displayName);
-      
-      onLocationSelect({ lat, lng, address: displayName });
-    } catch (error) {
-      console.error('Error getting address:', error);
-      const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      setAddress(coords);
-      onLocationSelect({ lat, lng, address: coords });
-    }
+  // Get user's current position
+  useEffect(() => {
+    getCurrentLocation()
+      .then(coords => {
+        setCurrentPosition({ lat: coords.latitude, lng: coords.longitude });
+      })
+      .catch(error => {
+        console.warn("Could not get current location:", error);
+      });
+  }, []);
+
+  const defaultCenter: LatLngTuple = selectedLocation 
+    ? [selectedLocation.lat, selectedLocation.lng] 
+    : currentPosition 
+    ? [currentPosition.lat, currentPosition.lng] 
+    : [51.505, -0.09]; // London default
+
+  const handleLocationSelect = (location: { lat: number; lng: number; address?: string }) => {
+    setSelectedLocation(location);
+    onLocationSelect(location);
   };
 
-  const handleSearchLocation = async () => {
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-    
+
+    setIsSearching(true);
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`
       );
-      const data = await response.json();
       
-      if (data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lng = parseFloat(data[0].lon);
-        handleMapClick(lat, lng);
+      if (!response.ok) {
+        throw new Error('Erreur de recherche');
+      }
+
+      const results = await response.json();
+      
+      if (results.length > 0) {
+        const result = results[0];
+        const location = {
+          lat: parseFloat(result.lat),
+          lng: parseFloat(result.lon),
+          address: result.display_name
+        };
+        
+        setSelectedLocation(location);
+        onLocationSelect(location);
+        
+        // Center map on found location
+        if (mapRef.current) {
+          mapRef.current.setView([location.lat, location.lng], 15);
+        }
+        
+        toast({
+          title: "Lieu trouvé",
+          description: result.display_name,
+        });
+      } else {
+        toast({
+          title: "Aucun résultat",
+          description: "Aucun lieu trouvé pour cette recherche",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error searching location:', error);
+      toast({
+        title: "Erreur de recherche",
+        description: "Impossible de rechercher ce lieu",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
     }
   };
 
-  const getCurrentLocation = () => {
-    setIsGettingLocation(true);
-    
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          handleMapClick(lat, lng);
-          setIsGettingLocation(false);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setIsGettingLocation(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    } else {
-      setIsGettingLocation(false);
-    }
+  const handleUseCurrentLocation = () => {
+    getCurrentLocation()
+      .then(async coords => {
+        const address = await getAddressFromCoordinates(coords.latitude, coords.longitude);
+        const location = {
+          lat: coords.latitude,
+          lng: coords.longitude,
+          address
+        };
+        
+        setSelectedLocation(location);
+        onLocationSelect(location);
+        
+        // Center map on current location
+        if (mapRef.current) {
+          mapRef.current.setView([coords.latitude, coords.longitude], 15);
+        }
+        
+        toast({
+          title: "Position actuelle utilisée",
+          description: address,
+        });
+      })
+      .catch(error => {
+        toast({
+          title: "Erreur de géolocalisation",
+          description: "Impossible d'obtenir votre position actuelle",
+          variant: "destructive",
+        });
+      });
   };
-
-  const defaultCenter: LatLngTuple = position || [51.505, -0.09]; // London default
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Search and location controls */}
-      <div className="space-y-2">
-        <Label htmlFor="location-search">Search Location</Label>
-        <div className="flex gap-2">
-          <Input
-            id="location-search"
-            placeholder="Enter city, address, or landmark..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearchLocation()}
-          />
+      {/* Search Bar */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="w-5 h-5" />
+            Rechercher un lieu
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Rechercher une adresse, ville, pays..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              className="flex-1"
+            />
+            <Button onClick={handleSearch} disabled={isSearching}>
+              <Search className="w-4 h-4" />
+            </Button>
+          </div>
+          
           <Button 
-            onClick={handleSearchLocation}
-            variant="outline"
-            size="icon"
+            onClick={handleUseCurrentLocation} 
+            variant="outline" 
+            className="w-full"
           >
-            <Search className="w-4 h-4" />
+            <Navigation className="w-4 h-4 mr-2" />
+            Utiliser ma position actuelle
           </Button>
-          <Button 
-            onClick={getCurrentLocation}
-            variant="outline"
-            size="icon"
-            disabled={isGettingLocation}
-          >
-            <Navigation className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Selected location display */}
-      {address && (
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-start gap-2">
-            <MapPin className="w-4 h-4 text-adventure-blue mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium">Selected Location:</p>
-              <p className="text-xs text-gray-600">{address}</p>
-              {position && (
-                <p className="text-xs text-gray-400 mt-1">
-                  {position[0].toFixed(6)}, {position[1].toFixed(6)}
-                </p>
+      {/* Selected Location Info */}
+      {selectedLocation && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              Lieu sélectionné
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">
+                  {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                </Badge>
+              </div>
+              
+              {selectedLocation.address && (
+                <div className="text-sm text-gray-700">
+                  {selectedLocation.address}
+                </div>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Interactive map */}
-      <div className="h-64 rounded-lg overflow-hidden border">
-        <MapContainer
-          center={defaultCenter}
-          zoom={13}
-          style={{ height: "100%", width: "100%" }}
-          className="z-0"
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <LocationMarker position={position} onLocationSelect={handleMapClick} />
-        </MapContainer>
-      </div>
-
-      <p className="text-xs text-gray-500 text-center">
-        Click on the map to select a location, or use the search box and GPS button above
-      </p>
+      {/* Map */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            Carte interactive
+            <Badge variant="outline" className="ml-auto">
+              Cliquez pour sélectionner
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="h-96 w-full">
+            <MapContainer
+              center={defaultCenter}
+              zoom={13}
+              style={{ height: "100%", width: "100%" }}
+              ref={mapRef}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              <LocationMarker 
+                position={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : null}
+                onLocationSelect={handleLocationSelect}
+              />
+              
+              {/* Show current position if available */}
+              {currentPosition && (!selectedLocation || (
+                selectedLocation.lat !== currentPosition.lat || 
+                selectedLocation.lng !== currentPosition.lng
+              )) && (
+                <Marker position={[currentPosition.lat, currentPosition.lng]}>
+                  <Popup>
+                    <div className="p-2">
+                      <div className="font-semibold mb-1">Votre position</div>
+                      <div className="text-sm text-blue-600">
+                        {currentPosition.lat.toFixed(6)}, {currentPosition.lng.toFixed(6)}
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+            </MapContainer>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
