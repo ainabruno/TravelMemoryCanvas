@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import VideoGenerator from "@/components/video-generator";
-import VideoTest from "@/components/video-test";
 import { Video, Play, Film, Music, Camera, Settings } from "lucide-react";
 
 export default function VideoGenerationPage() {
