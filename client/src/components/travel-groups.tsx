@@ -540,7 +540,7 @@ export default function TravelGroups() {
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={message.userAvatar} />
                           <AvatarFallback>
-                            {message.userName.slice(0, 2).toUpperCase()}
+                            {message.userName ? message.userName.slice(0, 2).toUpperCase() : 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
@@ -610,7 +610,7 @@ export default function TravelGroups() {
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={message.userAvatar} />
                             <AvatarFallback>
-                              {message.userName.slice(0, 2).toUpperCase()}
+                              {message.userName ? message.userName.slice(0, 2).toUpperCase() : 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">

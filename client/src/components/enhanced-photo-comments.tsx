@@ -332,7 +332,7 @@ export default function EnhancedPhotoComments({ photoId, contributorName, contri
         <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="text-xs">
-              {comment.authorName.slice(0, 2).toUpperCase()}
+              {comment.authorName ? comment.authorName.slice(0, 2).toUpperCase() : 'A'}
             </AvatarFallback>
           </Avatar>
           
@@ -585,7 +585,7 @@ export default function EnhancedPhotoComments({ photoId, contributorName, contri
             <div className="flex items-start gap-3">
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="text-xs">
-                  {contributorName.slice(0, 2).toUpperCase()}
+                  {contributorName ? contributorName.slice(0, 2).toUpperCase() : 'C'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
