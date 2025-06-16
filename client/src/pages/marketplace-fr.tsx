@@ -78,14 +78,16 @@ export default function Marketplace() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
+      <PageLayout className="bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <PageLayout className="bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -340,6 +342,6 @@ export default function Marketplace() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </PageLayout>
   );
 }
