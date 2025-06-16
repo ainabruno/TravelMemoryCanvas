@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import NavigationMenu from "@/components/navigation-menu";
+import AppFooter from "@/components/app-footer";
 import PhotoUploadZone from "@/components/photo-upload-zone";
 import TripCard from "@/components/trip-card";
 import AlbumCard from "@/components/album-card";
@@ -590,6 +591,8 @@ export default function Home() {
         open={showShareModal}
         onClose={() => setShowShareModal(false)}
       />
+      
+      <AppFooter />
     </div>
   );
 }
