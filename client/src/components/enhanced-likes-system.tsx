@@ -351,7 +351,7 @@ export default function EnhancedLikesSystem({
                         <div key={name} className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
                             <AvatarFallback className="text-xs">
-                              {name.slice(0, 2).toUpperCase()}
+                              {name ? name.slice(0, 2).toUpperCase() : 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <span className="text-sm">{name}</span>
