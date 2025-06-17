@@ -966,6 +966,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Single photo analysis route
+  app.post("/api/photos/:id/analyze", async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.id);
+      const { photoUrl, analysisType = 'comprehensive' } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const photo = await storage.getPhoto(photoId);
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found" });
+      }
+
+      const { analyzeImageWithVision } = await import('./vision-analysis');
+      
+      // Perform the analysis
+      const analysisResult = await analyzeImageWithVision(photoUrl || photo.url);
+      
+      // Store analysis results in photo metadata
+      const metadata = photo.metadata ? JSON.parse(photo.metadata) : {};
+      metadata.analysis = {
+        ...analysisResult,
+        analyzedAt: new Date().toISOString(),
+        analysisType
+      };
+      
+      await storage.updatePhoto(photoId, { 
+        metadata: JSON.stringify(metadata) 
+      });
+      
+      res.json(analysisResult);
+    } catch (error) {
+      console.error('Photo analysis error:', error);
+      res.status(500).json({ 
+        message: "Failed to analyze photo", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   // Vision Analysis and Object Recognition routes
   app.get("/api/photos/:id/recognition", async (req, res) => {
     try {
