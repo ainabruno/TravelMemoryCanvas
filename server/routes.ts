@@ -345,7 +345,7 @@ async function generateLocationSuggestions(filters: any, searchQuery: string, us
   });
 
   // Sort by match score and return top results
-  suggestions.sort((a, b) => b.matchScore - a.matchScore);
+  suggestions.sort((a, b) => (b as any).matchScore - (a as any).matchScore);
   
   return suggestions.slice(0, 12);
 }
@@ -2056,7 +2056,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: "Shibuya, Tokyo, Japon",
             latitude: "35.6598",
             longitude: "139.7006",
-            uploadedAt: "2024-06-10T10:30:00Z",
+            uploadedAt: new Date("2024-06-10T10:30:00Z"),
             metadata: null
           },
           {
@@ -2070,7 +2070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: "Kyoto, Japon",
             latitude: "35.0116",
             longitude: "135.7681",
-            uploadedAt: "2024-06-11T14:15:00Z",
+            uploadedAt: new Date("2024-06-11T14:15:00Z"),
             metadata: null
           },
           {
@@ -2084,7 +2084,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: "Osaka, Japon",
             latitude: "34.6873",
             longitude: "135.5262",
-            uploadedAt: "2024-06-12T18:45:00Z",
+            uploadedAt: new Date("2024-06-12T18:45:00Z"),
             metadata: null
           },
           {
@@ -2098,7 +2098,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: "Mont Fuji, Japon",
             latitude: "35.3606",
             longitude: "138.7274",
-            uploadedAt: "2024-06-13T07:20:00Z",
+            uploadedAt: new Date("2024-06-13T07:20:00Z"),
             metadata: null
           },
           {
@@ -2112,7 +2112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: "Hiroshima, Japon",
             latitude: "34.3955",
             longitude: "132.4536",
-            uploadedAt: "2024-06-14T11:00:00Z",
+            uploadedAt: new Date("2024-06-14T11:00:00Z"),
             metadata: null
           }
         ];
