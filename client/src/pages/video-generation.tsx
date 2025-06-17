@@ -267,8 +267,8 @@ export default function VideoGenerationPage() {
               )}
             </div>
           </CardContent>
-        </Card>
-      </div>
+            </Card>
+          </div>
 
           {/* Main Video Generator */}
           <VideoGenerator 
