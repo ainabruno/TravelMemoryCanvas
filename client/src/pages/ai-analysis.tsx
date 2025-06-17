@@ -52,8 +52,8 @@ export default function AIAnalysisPage() {
     <PageLayout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Page Header */}
-      <div className="text-center space-y-4">
+          {/* Page Header */}
+          <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
           <Brain className="w-8 h-8 text-purple-600" />
           <h1 className="text-3xl font-bold">Intelligence Artificielle</h1>
