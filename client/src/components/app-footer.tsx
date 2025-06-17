@@ -32,10 +32,10 @@ export default function AppFooter() {
   };
 
   const socialLinks = [
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Youtube, href: "#", label: "YouTube" }
+    { icon: Instagram, href: "https://instagram.com/wanderlust", label: "Instagram" },
+    { icon: Facebook, href: "https://facebook.com/wanderlust", label: "Facebook" },
+    { icon: Twitter, href: "https://twitter.com/wanderlust", label: "Twitter" },
+    { icon: Youtube, href: "https://youtube.com/wanderlust", label: "YouTube" }
   ];
 
   return (
@@ -129,6 +129,8 @@ export default function AppFooter() {
                   <a
                     key={`social-${index}`}
                     href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition-colors"
                     aria-label={social.label}
                   >

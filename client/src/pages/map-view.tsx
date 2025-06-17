@@ -64,7 +64,7 @@ export default function MapView() {
       </div>
 
       {/* Controls */}
-      <Card>
+      <Card className="relative z-20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />

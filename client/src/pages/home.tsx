@@ -296,7 +296,16 @@ export default function Home() {
 
             <div 
               className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-green-200 cursor-pointer"
-              onClick={() => setActiveTab('photos')}
+              onClick={() => {
+                setActiveTab('photos');
+                // Scroll to photo upload zone
+                setTimeout(() => {
+                  const uploadZone = document.querySelector('[data-upload-zone]');
+                  if (uploadZone) {
+                    uploadZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }, 100);
+              }}
             >
               <div className="flex flex-col items-center text-center">
                 <div className="p-3 bg-green-50 rounded-2xl mb-3 group-hover:bg-green-100 transition-colors">
