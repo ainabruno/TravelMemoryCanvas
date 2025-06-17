@@ -2057,7 +2057,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             latitude: "35.6598",
             longitude: "139.7006",
             uploadedAt: new Date("2024-06-10T10:30:00Z"),
-            metadata: null
+            metadata: null,
+            contributorName: null
           },
           {
             id: 1002,
@@ -2071,7 +2072,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             latitude: "35.0116",
             longitude: "135.7681",
             uploadedAt: new Date("2024-06-11T14:15:00Z"),
-            metadata: null
+            metadata: null,
+            contributorName: null
           },
           {
             id: 1003,
@@ -2085,7 +2087,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             latitude: "34.6873",
             longitude: "135.5262",
             uploadedAt: new Date("2024-06-12T18:45:00Z"),
-            metadata: null
+            metadata: null,
+            contributorName: null
           },
           {
             id: 1004,
@@ -2099,7 +2102,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             latitude: "35.3606",
             longitude: "138.7274",
             uploadedAt: new Date("2024-06-13T07:20:00Z"),
-            metadata: null
+            metadata: null,
+            contributorName: null
           },
           {
             id: 1005,
@@ -2113,7 +2117,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             latitude: "34.3955",
             longitude: "132.4536",
             uploadedAt: new Date("2024-06-14T11:00:00Z"),
-            metadata: null
+            metadata: null,
+            contributorName: null
           }
         ];
       }
