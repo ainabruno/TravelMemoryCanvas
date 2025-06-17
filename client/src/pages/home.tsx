@@ -67,6 +67,7 @@ export default function Home() {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ["/api/stats"],
@@ -405,7 +406,7 @@ export default function Home() {
         <PhotoUploadZone />
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="mb-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="map" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Carte</TabsTrigger>
