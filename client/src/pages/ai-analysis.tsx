@@ -69,39 +69,39 @@ export default function AIAnalysisPage() {
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Camera className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-sm text-gray-600">Photos totales</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Eye className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-green-600">{stats.analyzed}</div>
-            <div className="text-sm text-gray-600">Photos analysées</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <TrendingUp className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-purple-600">{Math.round(stats.rate)}%</div>
-            <div className="text-sm text-gray-600">Taux completion</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Zap className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-orange-600">4.0</div>
-            <div className="text-sm text-gray-600">GPT-4 Vision</div>
-          </CardContent>
-        </Card>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <Card>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-2" />
+                <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.total}</div>
+                <div className="text-xs sm:text-sm text-gray-600">Photos totales</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mx-auto mb-2" />
+                <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.analyzed}</div>
+                <div className="text-xs sm:text-sm text-gray-600">Photos analysées</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mx-auto mb-2" />
+                <div className="text-xl sm:text-2xl font-bold text-purple-600">{Math.round(stats.rate)}%</div>
+                <div className="text-xs sm:text-sm text-gray-600">Taux completion</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 mx-auto mb-2" />
+                <div className="text-xl sm:text-2xl font-bold text-orange-600">4.0</div>
+                <div className="text-xs sm:text-sm text-gray-600">GPT-4 Vision</div>
+              </CardContent>
+            </Card>
       </div>
 
       {/* Main Content Tabs */}

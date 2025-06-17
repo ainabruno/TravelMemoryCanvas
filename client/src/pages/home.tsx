@@ -556,7 +556,7 @@ export default function Home() {
           </TabsContent>
           
           <TabsContent value="albums" className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {albumsLoading ? (
                 [...Array(4)].map((_, i) => (
                   <Card key={i}>
