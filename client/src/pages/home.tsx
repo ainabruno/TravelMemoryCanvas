@@ -172,7 +172,7 @@ export default function Home() {
           </div>
 
           {/* Enhanced Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -281,7 +281,7 @@ export default function Home() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-blue-200">
               <div className="flex flex-col items-center text-center">
                 <div className="p-3 bg-blue-50 rounded-2xl mb-3 group-hover:bg-blue-100 transition-colors">
@@ -333,7 +333,7 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div 
               className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-6 cursor-pointer hover:scale-105 transition-all duration-300"
               onClick={() => navigate('/subscription')}
@@ -445,7 +445,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {trips.slice(0, 3).map((trip) => (
                 <TripCard key={trip.id} trip={trip} />
               ))}
