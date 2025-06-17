@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import AutoAnalysisDashboard from "@/components/auto-analysis-dashboard";
 import ObjectRecognition from "@/components/object-recognition";
+import PageLayout from "@/components/page-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,7 +49,9 @@ export default function AIAnalysisPage() {
   const stats = getAnalysisStats();
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <PageLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Page Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
@@ -321,6 +324,8 @@ export default function AIAnalysisPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+        </div>
+      </div>
+    </PageLayout>
   );
 }
