@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import StoryGenerator from "@/components/story-generator";
+import PageLayout from "@/components/page-layout";
 import { BookOpen, FileText, Clock, Users } from "lucide-react";
 
 export default function StoryGenerationPage() {
@@ -17,14 +18,16 @@ export default function StoryGenerationPage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Génération de récits</h1>
-        <p className="text-gray-600">
-          Transformez vos photos et souvenirs de voyage en histoires captivantes grâce à l'intelligence artificielle
-        </p>
-      </div>
+    <PageLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Génération de récits</h1>
+            <p className="text-gray-600">
+              Transformez vos photos et souvenirs de voyage en histoires captivantes grâce à l'intelligence artificielle
+            </p>
+          </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -158,12 +161,14 @@ export default function StoryGenerationPage() {
         </div>
       </div>
 
-      {/* Main Story Generator */}
-      <div className="mt-8">
-        <StoryGenerator 
-          tripId={trips.length > 0 ? trips[0].id : undefined}
-        />
+          {/* Main Story Generator */}
+          <div className="mt-8">
+            <StoryGenerator 
+              tripId={trips.length > 0 ? trips[0].id : undefined}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

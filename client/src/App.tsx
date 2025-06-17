@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/home";
+import AlbumsPage from "@/pages/albums";
 import AIAnalysisPage from "@/pages/ai-analysis";
 import SuggestionsPage from "@/pages/suggestions";
 import StoryGenerationPage from "@/pages/story-generation";
@@ -27,7 +28,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/albums" component={Home} />
+      <Route path="/albums" component={AlbumsPage} />
       <Route path="/ai-analysis" component={AIAnalysisPage} />
       <Route path="/suggestions" component={SuggestionsPage} />
       <Route path="/stories" component={StoryGenerationPage} />

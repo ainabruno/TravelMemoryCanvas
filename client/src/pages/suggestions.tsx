@@ -1,18 +1,19 @@
 import React from "react";
-import AppHeader from "@/components/app-header";
-import MobileNav from "@/components/mobile-nav";
+import PageLayout from "@/components/page-layout";
 import SimpleLocationSuggestions from "@/components/simple-location-suggestions";
 
 export default function SuggestionsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AppHeader />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SimpleLocationSuggestions />
-      </main>
-
-      <MobileNav />
-    </div>
+    <PageLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Suggestions Intelligentes</h1>
+            <p className="text-gray-600">Découvrez de nouvelles destinations personnalisées</p>
+          </div>
+          <SimpleLocationSuggestions />
+        </div>
+      </div>
+    </PageLayout>
   );
 }
