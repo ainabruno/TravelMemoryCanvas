@@ -127,8 +127,8 @@ export default function StoryGenerationPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {albums.length > 0 ? (
-                albums.slice(0, 5).map((album: any) => (
+              {(albums as any[]).length > 0 ? (
+                (albums as any[]).slice(0, 5).map((album: any) => (
                   <div key={album.id} className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
