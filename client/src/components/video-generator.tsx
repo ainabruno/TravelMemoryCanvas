@@ -204,6 +204,27 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [videoPhotos, setVideoPhotos] = useState<any[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Handle keyboard events for video player
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (showVideoPlayer && event.key === 'Escape') {
+        if (playbackInterval) {
+          clearInterval(playbackInterval);
+          setPlaybackInterval(null);
+        }
+        setShowVideoPlayer(false);
+        setSelectedVideo(null);
+        setIsPlaying(false);
+        setPlaybackTime(0);
+      }
+    };
+
+    if (showVideoPlayer) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [showVideoPlayer, playbackInterval]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -949,9 +970,9 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
 
       {/* Video Player Modal */}
       {showVideoPlayer && selectedVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-          <div className="relative w-full max-w-4xl mx-4">
-            {/* Close button */}
+        <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
+          <div className="relative w-full max-w-5xl mx-4">
+            {/* Enhanced Close button */}
             <button
               onClick={() => {
                 // Clear any active playback interval
@@ -964,15 +985,30 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                 setIsPlaying(false);
                 setPlaybackTime(0);
               }}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 z-10"
+              className="absolute -top-16 right-0 text-white hover:text-gray-300 z-20 group"
             >
-              <div className="flex items-center gap-2">
-                <span>Fermer</span>
-                <div className="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                  ×
+              <div className="flex items-center gap-3 bg-black bg-opacity-50 rounded-full px-4 py-2 hover:bg-opacity-70 transition-all">
+                <span className="text-sm font-medium">Fermer (ESC)</span>
+                <div className="w-8 h-8 rounded-full bg-white bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-50 transition-all">
+                  <span className="text-lg font-bold">×</span>
                 </div>
               </div>
             </button>
+
+            {/* Additional close overlay - click outside to close */}
+            <div 
+              className="absolute inset-0 -z-10"
+              onClick={() => {
+                if (playbackInterval) {
+                  clearInterval(playbackInterval);
+                  setPlaybackInterval(null);
+                }
+                setShowVideoPlayer(false);
+                setSelectedVideo(null);
+                setIsPlaying(false);
+                setPlaybackTime(0);
+              }}
+            />
 
             {/* Video player container */}
             <div className="bg-black rounded-lg overflow-hidden">
@@ -1133,6 +1169,26 @@ export default function VideoGenerator({ tripId, albumId, photoIds, className = 
                       />
                     </div>
                   </div>
+
+                  {/* Close button in controls */}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-white hover:text-red-400 ml-6 border border-white/30"
+                    onClick={() => {
+                      if (playbackInterval) {
+                        clearInterval(playbackInterval);
+                        setPlaybackInterval(null);
+                      }
+                      setShowVideoPlayer(false);
+                      setSelectedVideo(null);
+                      setIsPlaying(false);
+                      setPlaybackTime(0);
+                    }}
+                  >
+                    <span className="text-xs mr-1">Fermer</span>
+                    <span className="text-lg">×</span>
+                  </Button>
                 </div>
 
                 {/* Video metadata */}
