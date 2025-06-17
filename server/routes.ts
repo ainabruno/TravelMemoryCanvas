@@ -4797,6 +4797,207 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add missing endpoints that were returning HTML instead of JSON
+
+  // Groups API endpoints
+  app.get('/api/groups', async (req, res) => {
+    try {
+      const groups = [
+        {
+          id: 1,
+          name: "Aventuriers Tokyo",
+          description: "Groupe d'explorateurs urbains passionnés par Tokyo",
+          coverImage: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800",
+          memberCount: 12,
+          tripCount: 8,
+          isPrivate: false,
+          createdAt: "2024-05-15T10:00:00Z",
+          updatedAt: "2024-06-10T14:30:00Z",
+          role: "admin",
+          lastActivity: "2024-06-15T09:20:00Z"
+        },
+        {
+          id: 2,
+          name: "Photographes Voyage",
+          description: "Communauté de photographes de voyage",
+          coverImage: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800",
+          memberCount: 25,
+          tripCount: 15,
+          isPrivate: true,
+          createdAt: "2024-04-20T16:45:00Z",
+          updatedAt: "2024-06-12T11:15:00Z",
+          role: "member",
+          lastActivity: "2024-06-14T18:40:00Z"
+        }
+      ];
+      res.json(groups);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      res.status(500).json({ message: 'Failed to fetch groups' });
+    }
+  });
+
+  // Comments API endpoints
+  app.get('/api/comments/photo/:photoId', async (req, res) => {
+    try {
+      const photoId = parseInt(req.params.photoId);
+      const comments = [
+        {
+          id: 1,
+          photoId: photoId,
+          contributorName: "Marie Dupont",
+          contributorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100",
+          content: "Magnifique photo ! Les couleurs sont superbes.",
+          createdAt: "2024-06-14T10:30:00Z",
+          replies: []
+        },
+        {
+          id: 2,
+          photoId: photoId,
+          contributorName: "Jean Martin",
+          contributorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+          content: "J'adore cette perspective, très créatif !",
+          createdAt: "2024-06-14T15:45:00Z",
+          replies: [
+            {
+              id: 3,
+              contributorName: "Sophie Moreau",
+              contributorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100",
+              content: "Je suis d'accord, excellent travail !",
+              createdAt: "2024-06-14T16:00:00Z"
+            }
+          ]
+        }
+      ];
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ message: 'Failed to fetch comments' });
+    }
+  });
+
+  // Maps API endpoints
+  app.get('/api/maps/photos', async (req, res) => {
+    try {
+      const photosWithGPS = [
+        {
+          id: 1,
+          latitude: 35.6762,
+          longitude: 139.6503,
+          title: "Tokyo Tower",
+          thumbnail: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=200",
+          date: "2024-06-10T14:30:00Z"
+        },
+        {
+          id: 2,
+          latitude: 35.0116,
+          longitude: 135.7681,
+          title: "Fushimi Inari",
+          thumbnail: "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=200",
+          date: "2024-06-11T09:15:00Z"
+        }
+      ];
+      res.json(photosWithGPS);
+    } catch (error) {
+      console.error('Error fetching map photos:', error);
+      res.status(500).json({ message: 'Failed to fetch map photos' });
+    }
+  });
+
+  // Marketplace API endpoints
+  app.get('/api/marketplace/products', async (req, res) => {
+    try {
+      const products = [
+        {
+          id: 1,
+          title: "Guide Complet Tokyo",
+          description: "Guide détaillé avec conseils d'initiés",
+          price: 15.99,
+          currency: "EUR",
+          category: "guide",
+          thumbnail: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=300",
+          rating: 4.8,
+          sales: 234,
+          authorName: "Marie Explorateur",
+          authorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100"
+        },
+        {
+          id: 2,
+          title: "Vidéo Japon Cinématique",
+          description: "Collection de vidéos HD du Japon",
+          price: 25.00,
+          currency: "EUR",
+          category: "video",
+          thumbnail: "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=300",
+          rating: 4.9,
+          sales: 156,
+          authorName: "Jean Vidéaste",
+          authorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
+        }
+      ];
+      res.json(products);
+    } catch (error) {
+      console.error('Error fetching marketplace products:', error);
+      res.status(500).json({ message: 'Failed to fetch marketplace products' });
+    }
+  });
+
+  // Affiliate stats API endpoints
+  app.get('/api/affiliate/stats', async (req, res) => {
+    try {
+      const affiliateStats = {
+        totalCommissions: 890.45,
+        monthlyCommissions: 145.30,
+        clicks: 1250,
+        conversions: 42,
+        conversionRate: 3.36,
+        pendingCommissions: 78.20,
+        paidCommissions: 812.25,
+        topProducts: [
+          { id: 1, name: "Guide Tokyo", commissions: 245.80, conversions: 18 },
+          { id: 2, name: "Vidéo Japon", commissions: 189.30, conversions: 12 }
+        ]
+      };
+      res.json(affiliateStats);
+    } catch (error) {
+      console.error('Error fetching affiliate stats:', error);
+      res.status(500).json({ message: 'Failed to fetch affiliate stats' });
+    }
+  });
+
+  // Analytics trends API endpoints
+  app.get('/api/analytics/trends', async (req, res) => {
+    try {
+      const trends = {
+        photoUploadTrend: [
+          { date: "2024-06-01", count: 25 },
+          { date: "2024-06-08", count: 42 },
+          { date: "2024-06-15", count: 38 }
+        ],
+        tripCreationTrend: [
+          { date: "2024-06-01", count: 3 },
+          { date: "2024-06-08", count: 5 },
+          { date: "2024-06-15", count: 4 }
+        ],
+        popularDestinations: [
+          { destination: "Tokyo", visits: 156 },
+          { destination: "Kyoto", visits: 134 },
+          { destination: "Osaka", visits: 98 }
+        ],
+        seasonalTrends: {
+          spring: 22,
+          summer: 45,
+          autumn: 28,
+          winter: 15
+        }
+      };
+      res.json(trends);
+    } catch (error) {
+      console.error('Error fetching analytics trends:', error);
+      res.status(500).json({ message: 'Failed to fetch analytics trends' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
