@@ -155,7 +155,7 @@ export default function StoryGenerationPage() {
         {/* Story Generator */}
         <div className="lg:col-span-1">
           <StoryGenerator 
-            tripId={trips.length > 0 ? trips[0].id : undefined}
+            tripId={(trips as any[]).length > 0 ? (trips as any[])[0].id : undefined}
             className="h-full"
           />
         </div>
@@ -164,7 +164,7 @@ export default function StoryGenerationPage() {
           {/* Main Story Generator */}
           <div className="mt-8">
             <StoryGenerator 
-              tripId={trips.length > 0 ? trips[0].id : undefined}
+              tripId={(trips as any[]).length > 0 ? (trips as any[])[0].id : undefined}
             />
           </div>
         </div>

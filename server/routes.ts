@@ -4734,7 +4734,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      const promotion = validCodes[code.toUpperCase()];
+      const promotion = (validCodes as any)[code.toUpperCase()];
       
       if (!promotion) {
         return res.status(400).json({ 
