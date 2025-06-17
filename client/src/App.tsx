@@ -22,12 +22,14 @@ import Subscription from "@/pages/subscription";
 import Marketplace from "@/pages/marketplace";
 import Affiliate from "@/pages/affiliate";
 import RevenueAnalytics from "@/pages/revenue-analytics-fr";
+import NewTripPage from "@/pages/new-trip";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/trips/new" component={NewTripPage} />
       <Route path="/albums" component={AlbumsPage} />
       <Route path="/ai-analysis" component={AIAnalysisPage} />
       <Route path="/suggestions" component={SuggestionsPage} />

@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TripMap from "@/components/trip-map";
 import { Camera, Images, Globe, Share, Map, Users, UserPlus, TrendingUp, Star, Heart, MapPin, Calendar, Sparkles, ArrowRight, Plus, Crown, ShoppingBag, DollarSign } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useState } from "react";
 
 interface Stats {
@@ -282,17 +282,22 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="mb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-blue-200">
-              <div className="flex flex-col items-center text-center">
-                <div className="p-3 bg-blue-50 rounded-2xl mb-3 group-hover:bg-blue-100 transition-colors">
-                  <Plus className="w-6 h-6 text-blue-600" />
+            <Link href="/trips/new">
+              <div className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-blue-200 cursor-pointer">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-3 bg-blue-50 rounded-2xl mb-3 group-hover:bg-blue-100 transition-colors">
+                    <Plus className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Nouveau Voyage</span>
+                  <span className="text-sm text-gray-500 mt-1">Créer un voyage</span>
                 </div>
-                <span className="font-medium text-gray-900">Nouveau Voyage</span>
-                <span className="text-sm text-gray-500 mt-1">Créer un voyage</span>
               </div>
-            </button>
+            </Link>
 
-            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-green-200">
+            <div 
+              className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-green-200 cursor-pointer"
+              onClick={() => setActiveTab('photos')}
+            >
               <div className="flex flex-col items-center text-center">
                 <div className="p-3 bg-green-50 rounded-2xl mb-3 group-hover:bg-green-100 transition-colors">
                   <Camera className="w-6 h-6 text-green-600" />
@@ -300,27 +305,31 @@ export default function Home() {
                 <span className="font-medium text-gray-900">Importer Photos</span>
                 <span className="text-sm text-gray-500 mt-1">Ajouter des souvenirs</span>
               </div>
-            </button>
+            </div>
 
-            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-purple-200">
-              <div className="flex flex-col items-center text-center">
-                <div className="p-3 bg-purple-50 rounded-2xl mb-3 group-hover:bg-purple-100 transition-colors">
-                  <Users className="w-6 h-6 text-purple-600" />
+            <Link href="/albums">
+              <div className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-purple-200 cursor-pointer">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-3 bg-purple-50 rounded-2xl mb-3 group-hover:bg-purple-100 transition-colors">
+                    <Users className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">Album Partagé</span>
+                  <span className="text-sm text-gray-500 mt-1">Collaborer</span>
                 </div>
-                <span className="font-medium text-gray-900">Album Partagé</span>
-                <span className="text-sm text-gray-500 mt-1">Collaborer</span>
               </div>
-            </button>
+            </Link>
 
-            <button className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-orange-200">
-              <div className="flex flex-col items-center text-center">
-                <div className="p-3 bg-orange-50 rounded-2xl mb-3 group-hover:bg-orange-100 transition-colors">
-                  <Sparkles className="w-6 h-6 text-orange-600" />
+            <Link href="/ai-analysis">
+              <div className="group relative p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-orange-200 cursor-pointer">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-3 bg-orange-50 rounded-2xl mb-3 group-hover:bg-orange-100 transition-colors">
+                    <Sparkles className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <span className="font-medium text-gray-900">IA Créative</span>
+                  <span className="text-sm text-gray-500 mt-1">Générer du contenu</span>
                 </div>
-                <span className="font-medium text-gray-900">IA Créative</span>
-                <span className="text-sm text-gray-500 mt-1">Générer du contenu</span>
               </div>
-            </button>
+            </Link>
           </div>
         </div>
 
