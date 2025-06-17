@@ -136,7 +136,7 @@ export default function PhotoUploadZone() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-upload-zone>
       {/* Location Controls */}
       <div className="flex flex-wrap gap-2 items-center justify-between">
         <div className="flex items-center gap-2">
