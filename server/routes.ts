@@ -415,7 +415,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/trips", async (req, res) => {
     try {
-      const tripData = insertTripSchema.parse(req.body);
+      // Convert date strings to Date objects before validation
+      const bodyWithDates = {
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+      };
+      
+      const tripData = insertTripSchema.parse(bodyWithDates);
       const trip = await storage.createTrip(tripData);
       res.status(201).json(trip);
     } catch (error) {
@@ -426,7 +433,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/trips/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const tripData = insertTripSchema.partial().parse(req.body);
+      
+      // Convert date strings to Date objects before validation
+      const bodyWithDates = {
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+      };
+      
+      const tripData = insertTripSchema.partial().parse(bodyWithDates);
       const trip = await storage.updateTrip(id, tripData);
       if (!trip) {
         return res.status(404).json({ message: "Trip not found" });
