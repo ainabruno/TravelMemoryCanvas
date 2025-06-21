@@ -1248,6 +1248,9 @@ export type ShareLink = typeof shareLinks.$inferSelect;
 
 export const insertTripSchema = createInsertSchema(trips).omit({
   id: true,
+}).extend({
+  startDate: z.union([z.date(), z.string().transform((str) => new Date(str))]),
+  endDate: z.union([z.date(), z.string().transform((str) => new Date(str)), z.null()]).optional(),
 });
 
 export const insertAlbumSchema = createInsertSchema(albums).omit({
