@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { CloudUpload, Plus, CheckCircle, MapPin, Navigation } from "lucide-react";
 import LocationPicker from "./location-picker";
@@ -161,6 +161,9 @@ export default function PhotoUploadZone() {
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Select Photo Location</DialogTitle>
+                <DialogDescription>
+                  Choose a location for your photos on the map
+                </DialogDescription>
               </DialogHeader>
               <LocationPicker onLocationSelect={handleLocationSelect} />
             </DialogContent>
