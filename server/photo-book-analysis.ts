@@ -1,9 +1,17 @@
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+try {
+  if (process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+} catch (error) {
+  console.warn('OpenAI client initialization failed:', error);
+}
 
 interface PhotoBookData {
   title: string;
@@ -111,6 +119,25 @@ export async function generatePhotoBookLayout(data: PhotoBookData): Promise<Phot
 async function analyzePhotosForLayout(photos: any[]): Promise<any> {
   if (!photos || photos.length === 0) {
     return { categories: [], highlights: [], storytelling: [] };
+  }
+
+  if (!openai) {
+    return { 
+      categories: [
+        { name: "Photos", count: photos.length, priority: "medium" }
+      ], 
+      highlights: photos.slice(0, 3).map((photo, index) => ({
+        photoIndex: index,
+        reason: "Image sélectionnée",
+        suggestedLayout: "single"
+      })),
+      storytelling: {
+        chronology: "linear",
+        mood: "neutral",
+        keyMoments: ["Début", "Exploration", "Fin"],
+        suggestedFlow: ["intro", "gallery", "conclusion"]
+      }
+    };
   }
 
   try {
@@ -365,12 +392,16 @@ async function generateMapPage(photos: any[], pageNumber: number, format: string
 async function generatePageStory(photos: any[]): Promise<string | null> {
   if (!photos.length) return null;
   
+  if (!openai) {
+    return null;
+  }
+  
   try {
     const photoContext = photos.map(p => 
       `${p.originalName}: ${p.caption || 'No caption'} ${p.location ? `at ${p.location}` : ''}`
     ).join('; ');
 
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -513,12 +544,16 @@ async function generateLayoutPreview(photos: any[], theme: any): Promise<string>
 }
 
 export async function generatePhotoBookNarrative(photos: any[], tripData: any): Promise<string> {
+  if (!openai) {
+    return `Découvrez votre voyage à travers ${photos.length} photos exceptionnelles qui racontent votre histoire unique.`;
+  }
+  
   try {
     const photoContext = photos.slice(0, 10).map(p => 
       `${p.originalName}: ${p.caption || ''} ${p.location || ''}`
     ).join('\n');
 
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {

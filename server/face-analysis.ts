@@ -1,9 +1,17 @@
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+try {
+  if (process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+} catch (error) {
+  console.warn('OpenAI client initialization failed:', error);
+}
 
 interface DetectedFace {
   id: string;
@@ -52,6 +60,18 @@ interface Person {
 }
 
 export async function detectFacesInImage(imageUrl: string): Promise<FaceAnalysisResult> {
+  if (!openai) {
+    return {
+      faces: [],
+      totalFaces: 0,
+      uniquePeople: 0,
+      groupSize: 'solo',
+      mood: 'neutral',
+      setting: 'unknown',
+      confidence: 0
+    };
+  }
+  
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -147,6 +167,16 @@ Règles importantes:
 }
 
 export async function analyzeFaceCharacteristics(imageUrl: string, faceCoordinates: { x: number; y: number; width: number; height: number }): Promise<Partial<DetectedFace>> {
+  if (!openai) {
+    return {
+      age: undefined,
+      gender: undefined,
+      emotion: undefined,
+      ethnicity: undefined,
+      confidence: 0
+    };
+  }
+  
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -206,8 +236,12 @@ export async function analyzeFaceCharacteristics(imageUrl: string, faceCoordinat
 }
 
 export async function compareFaces(imageUrl1: string, face1Coords: any, imageUrl2: string, face2Coords: any): Promise<{ similarity: number; isSamePerson: boolean; confidence: number }> {
+  if (!openai) {
+    return { similarity: 0, isSamePerson: false, confidence: 0 };
+  }
+  
   try {
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -273,8 +307,12 @@ Critères d'évaluation:
 }
 
 export async function generateFaceDescription(imageUrl: string, faceCoordinates: { x: number; y: number; width: number; height: number }): Promise<string> {
+  if (!openai) {
+    return "Description non disponible - API configuration requise";
+  }
+  
   try {
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -310,8 +348,12 @@ export async function generateFaceDescription(imageUrl: string, faceCoordinates:
 }
 
 export async function extractFacialLandmarks(imageUrl: string): Promise<FaceLandmark[]> {
+  if (!openai) {
+    return [];
+  }
+  
   try {
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
