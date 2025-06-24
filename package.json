@@ -13,7 +13,7 @@
     "db:push": "drizzle-kit push",
     "postbuild": "cp -r uploads dist/ 2>/dev/null || true",
     "render-build": "npm run build"
-  }
+  },
  
   "dependencies": {
     "@anthropic-ai/sdk": "^0.37.0",
