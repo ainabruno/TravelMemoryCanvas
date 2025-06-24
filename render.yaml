@@ -1,7 +1,37 @@
 services:
+  # Service Backend (Web Service)
   - type: web
-    name: travel-memory
-    env: node
+    name: rest-express-api
+    runtime: node
     buildCommand: npm install && npm run build
     startCommand: npm start
-    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+    healthCheckPath: /api/health
+    
+  # Service Frontend (Static Site)
+  - type: web
+    name: rest-express-frontend
+    runtime: static
+    buildCommand: npm run client:build
+    staticPublishPath: ./client/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: rest-express-api
+          property: host
+
+# Base de données PostgreSQL
+databases:
+  - name: rest-express-db
+    databaseName: rest_express
+    user: rest_express_user
+    plan: starter
