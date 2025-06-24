@@ -6,6 +6,8 @@ import ConnectPgSimple from 'connect-pg-simple';
 import { neon } from '@neondatabase/serverless';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { registerRoutes } from './routes'; // ✅ mets le bon chemin relatif si ce n’est pas "./routes"
+
 
 // Configuration pour ES modules
 const __filename = fileURLToPath(import.meta.url);
