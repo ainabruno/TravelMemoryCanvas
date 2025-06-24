@@ -15,7 +15,7 @@ export default async () => {
     plugins,
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "src"),
+        "@": path.resolve(__dirname, "src"),           // <-- ici src est correct
         "@shared": path.resolve(__dirname, "../shared"),
         "@assets": path.resolve(__dirname, "../attached_assets"),
       },
@@ -24,11 +24,8 @@ export default async () => {
     build: {
       outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
-      rollupOptions: {
-        external: ["@/components/ui/toaster"],
-      },
+      // Supprime rollupOptions.external à moins de vouloir vraiment externaliser des modules
     },
-
     server: {
       fs: {
         strict: true,
@@ -37,6 +34,7 @@ export default async () => {
     },
   });
 };
+
 
 // import { defineConfig } from "vite";
 // import react from "@vitejs/plugin-react";
