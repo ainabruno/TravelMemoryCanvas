@@ -1,6 +1,8 @@
 import { trips, albums, photos, albumContributors, photoComments, albumActivity, photoReactions, collaborationSessions, userProfiles, userStats, userAchievements, userFollows, type Trip, type Album, type Photo, type AlbumContributor, type PhotoComment, type AlbumActivity, type PhotoReaction, type CollaborationSession, type UserProfile, type UserStats, type UserAchievement, type UserFollow, type InsertTrip, type InsertAlbum, type InsertPhoto, type InsertAlbumContributor, type InsertPhotoComment, type InsertAlbumActivity, type InsertPhotoReaction, type InsertCollaborationSession, type InsertUserProfile, type InsertUserStats, type InsertUserAchievement, type InsertUserFollow } from "@shared/schema";
-import { db } from "./db";
+import { getDb } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
+
+const db = getDb();
 
 export interface IStorage {
   // Trip operations
