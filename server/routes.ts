@@ -384,20 +384,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Trip routes
   app.get("/api/trips", async (req, res) => {
-    try {
-      const trips = await storage.getTrips();
-      // Include photo counts for each trip
-      const tripsWithCounts = await Promise.all(
-        trips.map(async (trip) => {
-          const photos = await storage.getPhotosByTrip(trip.id);
-          return { ...trip, photoCount: photos.length };
-        })
-      );
-      res.json(tripsWithCounts);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch trips", error: error instanceof Error ? error.message : "Unknown error" });
-    }
-  });
+  try {
+    console.log("GET /api/trips called");
+
+    const trips = await storage.getTrips();
+    console.log("Fetched trips:", trips);
+
+    const tripsWithCounts = await Promise.all(
+      trips.map(async (trip) => {
+        const photos = await storage.getPhotosByTrip(trip.id);
+        return { ...trip, photoCount: photos.length };
+      })
+    );
+
+    res.json(tripsWithCounts);
+  } catch (error) {
+    console.error("❌ Error in /api/trips:", error);
+    res.status(500).json({
+      message: "Failed to fetch trips",
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+  }
+});
+
+  // app.get("/api/trips", async (req, res) => {
+  //   try {
+  //     const trips = await storage.getTrips();
+  //     // Include photo counts for each trip
+  //     const tripsWithCounts = await Promise.all(
+  //       trips.map(async (trip) => {
+  //         const photos = await storage.getPhotosByTrip(trip.id);
+  //         return { ...trip, photoCount: photos.length };
+  //       })
+  //     );
+  //     res.json(tripsWithCounts);
+  //   } catch (error) {
+  //     res.status(500).json({ message: "Failed to fetch trips", error: error instanceof Error ? error.message : "Unknown error" });
+  //   }
+  // });
 
   app.get("/api/trips/:id", async (req, res) => {
     try {
@@ -412,23 +437,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch trip", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
-
   app.post("/api/trips", async (req, res) => {
-    try {
-      // Convert date strings to Date objects before validation
-      const bodyWithDates = {
-        ...req.body,
-        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
-        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
-      };
+  try {
+    console.log("POST /api/trips body:", req.body);
+
+    const bodyWithDates = {
+      ...req.body,
+      startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+      endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+    };
+
+    const tripData = insertTripSchema.parse(bodyWithDates); // ← c’est ici que ça échoue
+    const trip = await storage.createTrip(tripData);
+    res.status(201).json(trip);
+  } catch (error) {
+    console.error("❌ Error in POST /api/trips:", error);
+    res.status(400).json({
+      message: "Invalid trip data",
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+  }
+});
+
+  // app.post("/api/trips", async (req, res) => {
+  //   try {
+  //     // Convert date strings to Date objects before validation
+  //     const bodyWithDates = {
+  //       ...req.body,
+  //       startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+  //       endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+  //     };
       
-      const tripData = insertTripSchema.parse(bodyWithDates);
-      const trip = await storage.createTrip(tripData);
-      res.status(201).json(trip);
-    } catch (error) {
-      res.status(400).json({ message: "Invalid trip data", error: error instanceof Error ? error.message : "Unknown error" });
-    }
-  });
+  //     const tripData = insertTripSchema.parse(bodyWithDates);
+  //     const trip = await storage.createTrip(tripData);
+  //     res.status(201).json(trip);
+  //   } catch (error) {
+  //     res.status(400).json({ message: "Invalid trip data", error: error instanceof Error ? error.message : "Unknown error" });
+  //   }
+  // });
 
   app.put("/api/trips/:id", async (req, res) => {
     try {
