@@ -30,6 +30,9 @@
   --nature-green: hsl(165, 79%, 42%);
   --wanderlust-purple: hsl(258, 80%, 65%);
 }
+.my-box {
+  @apply p-4 border border-border rounded;
+}
 
 .dark {
   --background: hsl(222, 84%, 4.9%);
