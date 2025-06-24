@@ -1,18 +1,20 @@
 services:
-  # Service Backend (Web Service)
   - type: web
     name: rest-express-api
     runtime: node
-    buildCommand: npm install && npm run build
+    buildCommand: npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rest-express-db
+          property: connectionString
     healthCheckPath: /api/health
-    
-  # Service Frontend (Static Site)
+
   - type: web
     name: rest-express-frontend
     runtime: static
@@ -29,7 +31,6 @@ services:
           name: rest-express-api
           property: host
 
-# Base de données PostgreSQL
 databases:
   - name: rest-express-db
     databaseName: rest_express
