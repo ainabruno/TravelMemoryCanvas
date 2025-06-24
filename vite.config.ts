@@ -24,7 +24,11 @@ export default async () => {
     build: {
       outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
+      rollupOptions: {
+        external: ["@/components/ui/toaster"],
+      },
     },
+
     server: {
       fs: {
         strict: true,
