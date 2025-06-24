@@ -146,13 +146,33 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-// Démarrage du serveur
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📝 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔌 WebSocket server ready`);
-});
+async function startServer() {
+  try {
+    await registerRoutes(app); // ✅ les routes sont maintenant activées
+
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📝 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🔌 WebSocket server ready`);
+    });
+
+  } catch (err) {
+    console.error("Erreur au démarrage du serveur :", err);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+
+// // Démarrage du serveur
+// server.listen(PORT, '0.0.0.0', () => {
+//   console.log(`🚀 Server running on port ${PORT}`);
+//   console.log(`📝 Health check: http://localhost:${PORT}/api/health`);
+//   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+//   console.log(`🔌 WebSocket server ready`);
+// });
 
 // Gestion propre de l'arrêt
 process.on('SIGTERM', () => {
